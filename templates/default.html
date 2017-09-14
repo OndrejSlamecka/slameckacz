@@ -1,0 +1,30 @@
+<!doctype HTML>
+<html lang="en">
+<head>
+    <meta charset="utf8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="{{site.url}}{{page.url | replace:'index.html',''}}">
+
+    <title>$titleTag$</title>
+
+    <!-- On Linux there is no font like Georgia. A good alternative would
+         be Buenard but it is probably not worth the loading time.
+
+         Unfortunately Google Fonts' 'text' argument cannot be made font
+         specific when two fonts are combined in one request.
+    -->
+    <link rel="stylesheet" type="text/css"
+     href="https://fonts.googleapis.com/css?family=Sorts+Mill+Goudy&amp;subset=latin,latin-ext">
+    <link rel="stylesheet" type="text/css"
+     href="https://fonts.googleapis.com/css?family=Cardo:400italic&amp;text=%CE%BB">
+
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="container">
+$body$
+    </div> <!-- /.container -->
+</body>
+</html>
+

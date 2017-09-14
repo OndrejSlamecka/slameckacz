@@ -1,0 +1,194 @@
+@charset "utf-8";
+/* Generated with SASS */
+
+// Width of the content area
+$content-width:    600px;
+$content-padding:  18px;
+
+$on-palm:          375px;
+
+// Using media queries with like this:
+// @include media-query($on-palm) {
+//     .wrapper {
+//         padding-right: $spacing-unit / 2;
+//     }
+// }
+@mixin media-query($device) {
+    @media screen and (max-width: $device) {
+        @content;
+    }
+}
+
+/* '*' might be slow on big page but this is a small page */
+* {
+    box-sizing: border-box;
+    margin: 0;
+}
+
+body {
+    font: 19px/26px Georgia, serif;
+    color: #111;
+    text-align: justify;
+}
+
+.container {
+    width: $content-width;
+    margin: 2em auto 2em;
+}
+
+@include media-query($on-palm) {
+    .container {
+        width: $on-palm;
+    }
+}
+
+/* Header */
+header {
+    position: relative;
+}
+
+.backlink {
+    position: absolute;
+    top: -8px;
+    padding: 0 0 0 .5em;
+    color: #000;
+    font-size: 2em;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.backlink span {
+    display: block;
+    margin: -0.4em 0 0 0.65em;
+    font-size: 10px;
+
+    &.backlink-wide {
+        margin-left: -0.3em;
+    }
+}
+
+@include media-query($on-palm) {
+    .backlink {
+        position: static;
+        top: 0;
+        display: block;
+        text-align: center;
+        margin: -0.5em 0 0.5em;
+        padding: 0;
+    }
+
+    .backlink span {
+        display: inline;
+        margin: 0;
+        font-size: medium;
+        text-decoration: underline;
+    }
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    position: relative;
+    margin: 1.9em auto 2em;
+}
+
+hr::after {
+    position: absolute;
+    top: -14px;
+    content: "λ";
+    font-family: Cardo;
+    background-color: white;
+    padding: 0 5px;
+    left: 49%;
+    font-size: 16px;
+    color: #666;
+}
+
+h1 {
+    font: 50px/50px "Sorts Mill Goudy", serif;
+    text-align: center;
+}
+
+/* Text */
+
+h2 {
+    font: 32/24px "Sorts Mill Goudy", serif;
+    padding: 0 $content-padding;
+    margin: 2em auto 0.5em;
+}
+
+h3 {
+    padding: 0 $content-padding;
+    font-size: 22px;
+    margin: 2em auto 1em;
+    font-weight: bold;
+}
+
+p {
+    padding: 0 $content-padding;
+    margin: 1em auto 2em;
+}
+
+form {
+    padding: 0 $content-padding;
+    margin: 1em auto 2em;
+}
+
+ul {
+    padding: 0 $content-padding 0 calc(#{$content-padding} + 3px);
+    margin: 1em auto;
+}
+
+ul li {
+    margin-bottom: 0.3em;
+    list-style: inside;
+}
+
+dl {
+    padding: 0 $content-padding;
+    margin: 0 auto;
+}
+
+dt {
+    font-size: 20px;
+    font-style: italic;
+}
+
+dd {
+    margin: 0 0 2em 2em;
+}
+
+blockquote {
+    margin: 0 2em;
+    font-style: italic;
+}
+
+blockquote p {
+    margin: 0 0 1em 0;
+}
+
+blockquote footer {
+    text-align: right;
+}
+
+a {
+    //color: #1291FF;
+}
+
+pre {
+    font-size: 16px;
+    font-family: monospace;
+    margin: 1em 0;
+    border: 1px solid #dedede;
+    background: #fafafd;
+}
+
+pre > code {
+    display: block;
+    padding: 0 $content-padding;
+    margin: 0 auto;
+}
+
+code {
+    font-family: monospace;
+}
