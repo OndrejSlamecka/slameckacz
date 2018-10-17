@@ -1,0 +1,16 @@
+name: slameckacz
+version: '0.1.0.0'
+license: UnspecifiedLicense
+ghc-options:
+- -threaded
+- -fwarn-unused-binds
+- -fwarn-unused-imports
+dependencies:
+- base ==4.*
+- hakyll ==4.9.*
+- hakyll-sass
+- filepath
+- containers
+executables:
+  site:
+    main: site.hs

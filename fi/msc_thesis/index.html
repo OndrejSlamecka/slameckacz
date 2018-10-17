@@ -1,0 +1,37 @@
+---
+layout: default
+title: "Monte Carlo Tree<br> Search in Verification of Markov Decision Processes"
+---
+$partial("templates/header.html")$
+
+<p>During 2017 I researched how to use
+<a href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">
+  Monte Carlo Tree Search</a>
+(a&nbsp;machine learning technique popularized mainly by its success in
+<a href="https://en.wikipedia.org/wiki/AlphaZero">Go and Chess</a>)
+to verify properties of
+  <a href="https://en.wikipedia.org/wiki/Markov_decision_process">Markov
+  Decision Processes</a> (in MDPs you can choose actions but there are
+  probabilities influencing where the process goes, see
+  <a href="http://www.prismmodelchecker.org/casestudies/zeroconf.php">zeroconf</a>
+  as an example).
+</p>
+
+<p>
+This was a joint work with my advisor
+<a href="https://www.fi.muni.cz/~xbrazdil/">Tomáš Brázdil</a>,
+<a href="https://www7.in.tum.de/~ashok/">Pranav Ashok</a>, and
+<a href="https://www7.in.tum.de/~kretinsk/">Jan Křetínský</a>.
+We have managed to come up with algorithms which outperform known
+approaches (e.g.,
+<a href="http://www.prismmodelchecker.org/bibitem.php?key=FKNP11">value iteration</a>
+or
+<a href="https://link.springer.com/chapter/10.1007%2F978-3-319-11936-6_8">BRTDP</a>)
+on some of the
+<a href="http://www.prismmodelchecker.org/casestudies/">common benchmarks</a>
+and we have shown there are models where our algorithms are
+significantly better.
+You can read the details in
+<a href="mcts_mdp_verification.pdf">my master's thesis</a>.
+</p>
+

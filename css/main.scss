@@ -5,7 +5,7 @@
 $content-width:    600px;
 $content-padding:  18px;
 
-$on-palm:          375px;
+$on-palm:          480px;
 
 // Using media queries with like this:
 // @include media-query($on-palm) {
@@ -32,14 +32,8 @@ body {
 }
 
 .container {
-    width: $content-width;
+    max-width: $content-width;
     margin: 2em auto 2em;
-}
-
-@include media-query($on-palm) {
-    .container {
-        width: $on-palm;
-    }
 }
 
 /* Header */
@@ -92,7 +86,7 @@ hr {
     margin: 1.9em auto 2em;
 }
 
-hr::after {
+hr:after {
     position: absolute;
     top: -14px;
     content: "λ";
