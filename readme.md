@@ -8,3 +8,5 @@
     stack exec site watch
     # or
     stack exec site rebuild
+
+    # If something is inexplicably *@#$ed then `rm -f _cache`
