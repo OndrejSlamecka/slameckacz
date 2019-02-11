@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Data.Monoid (mappend, (<>))
+import Data.Maybe (isJust)
 import Data.Map.Strict hiding (fromList)
 import qualified Data.Map.Strict
 import Hakyll
+import Hakyll.Web.Html (stripTags)
 import Hakyll.Web.Sass (sassCompiler)
 import System.FilePath.Posix (takeBaseName, takeDirectory, (</>))
 
@@ -24,9 +26,10 @@ niceRoute = customRoute createIndexRoute
 titleTagContext :: Context a
 titleTagContext = field "titleTag" $ \item -> do
     fieldTitle <- getMetadataField (itemIdentifier item) "title"
-    let value = case fieldTitle of
-                  Nothing -> ""
-                  Just t  -> t `mappend` " | "
+    isIndex    <- isJust <$> getMetadataField (itemIdentifier item) "isIndex"
+    let value = case (fieldTitle, isIndex) of
+                  (Just t, False)  -> stripTags t `mappend` " | "
+                  _ -> ""
     return $ value `mappend` "Ondřej Slámečka"
 
 
