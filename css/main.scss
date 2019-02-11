@@ -19,7 +19,21 @@ $on-palm:          480px;
     }
 }
 
-/* '*' might be slow on big page but this is a small page */
+@font-face {
+    font-family: 'Sorts Mill Goudy';
+    src: url('sorts-mill-goudy.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Cardo';
+    src: url('cardo-italic-lambda.woff2') format('woff2');
+    font-weight: normal;
+    font-style: italic;
+}
+
+/* '*' might be slow on a big page but this is a small page */
 * {
     box-sizing: border-box;
     margin: 0;
