@@ -58,7 +58,7 @@ unmatched = complement $ foldr1 (.||.) matchMap
 
 -- Pattern for files which should be ignored
 avoid :: Pattern
-avoid = fromList ["s5upload.yml", "site.hs", "stack.yaml", "slameckacz.cabal"]
+avoid = fromList ["s5upload.yml", "site.hs", "stack.yaml", "slameckacz.cabal", "package.yaml"]
 
 
 -- Compiles an HTML page (selects given layout and uses default context)
