@@ -7,7 +7,7 @@ ghc-options:
 - -fwarn-unused-imports
 dependencies:
 - base ==4.*
-- hakyll ==4.9.*
+- hakyll ==4.12.*
 - hakyll-sass
 - filepath
 - containers

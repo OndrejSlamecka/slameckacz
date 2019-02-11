@@ -1,14 +1,15 @@
--- This file has been generated from package.yaml by hpack version 0.20.0.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f6cbb4999d6ba3ee2a06be9d200e6af6017446e5af1e0214faa704c75c4c8332
+-- hash: ac696833ede408af7b792ab8a2a9844b67855c2ea54813a92b57dd2c23a56c67
 
 name:           slameckacz
 version:        0.1.0.0
 license:        UnspecifiedLicense
 build-type:     Simple
-cabal-version:  >= 1.10
 
 executable site
   main-is: site.hs
@@ -17,7 +18,7 @@ executable site
       base ==4.*
     , containers
     , filepath
-    , hakyll ==4.9.*
+    , hakyll ==4.12.*
     , hakyll-sass
   other-modules:
       Paths_slameckacz
