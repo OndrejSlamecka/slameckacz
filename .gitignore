@@ -1,3 +1,31 @@
+# https://github.com/github/gitignore/blob/master/Haskell.gitignore
+dist
+dist-*
+cabal-dev
+*.o
+*.hi
+*.hie
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+*.prof
+*.aux
+*.hp
+*.eventlog
 .stack-work/
-_cache/
-_site/
+cabal.project.local
+cabal.project.local~
+.HTF/
+.ghc.environment.*
+
+# Nix
+result
+
+# Hakyll
+_site
+_cache
