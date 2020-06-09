@@ -1,101 +1,81 @@
 {-# LANGUAGE OverloadedStrings #-}
-import Data.Monoid (mappend, (<>))
-import Data.Maybe (isJust)
-import Data.Map.Strict hiding (fromList)
-import qualified Data.Map.Strict
-import Hakyll
-import Hakyll.Web.Html (stripTags)
-import Hakyll.Web.Sass (sassCompiler)
-import System.FilePath.Posix (takeBaseName, takeDirectory, (</>))
+import           Hakyll
+import qualified Text.Pandoc.Shared as Pandoc (headerShift)
+import           Data.List (isInfixOf)
+import           System.FilePath.Posix (splitFileName, takeBaseName, takeDirectory, (</>))
 
 
--- Nice routes
+main :: IO ()
+main =
+  hakyll $ do
+    match ("images/*" .||. "fonts/*" .||. "fi/**/*.pdf") $ do
+      route   idRoute
+      compile copyFileCompiler
+
+    match "style.css" $ do
+      route   idRoute
+      compile compressCssCompiler
+
+    match ("e404.html" .||. "fi/**/*.html") $ do
+      route idRoute
+      compile $
+        getResourceBody
+          >>= applyAsTemplate defaultContext
+          >>= loadAndApplyTemplate "templates/default.html" defaultContext
+          >>= relativizeUrls
+
+    match "posts/*" $ do
+      route niceRoute
+      compile $ postPandocCompiler
+        >>= loadAndApplyTemplate "templates/post.html"    postCtx
+        >>= loadAndApplyTemplate "templates/default.html" postCtx
+        >>= removeIndexHtml
+        >>= relativizeUrls
+
+    match "index.html" $ do
+      route idRoute
+      compile $ do
+        posts <- recentFirst =<< loadAll "posts/*"
+        let indexCtx = listField "posts" postCtx (return posts)
+                    <> defaultContext
+
+        getResourceBody
+          >>= applyAsTemplate indexCtx
+          >>= loadAndApplyTemplate "templates/default.html" indexCtx
+          >>= removeIndexHtml
+          >>= relativizeUrls
+
+    match "templates/*.html" $
+      compile $ templateBodyCompiler
+
+
+postCtx :: Context String
+postCtx =
+     dateField "date" "%B %Y"
+  <> defaultContext
+
+
+postPandocCompiler :: Compiler (Item String)
+postPandocCompiler =
+  pandocCompilerWithTransform
+    defaultHakyllReaderOptions
+    defaultHakyllWriterOptions
+    (Pandoc.headerShift 1)
+
+
 -- http://yannesposito.com/Scratch/en/blog/Hakyll-setup/
 niceRoute :: Routes
 niceRoute = customRoute createIndexRoute
   where
-    createIndexRoute ident = if baseName == "index"
-      then path
-      else takeDirectory path </> baseName </> "index.html"
-      where
-        path = toFilePath ident
-        baseName = takeBaseName path
+    createIndexRoute ident =
+      let p = toFilePath ident
+       in takeDirectory p </> takeBaseName p </> "index.html"
 
-
--- Create title tag from page title
-titleTagContext :: Context a
-titleTagContext = field "titleTag" $ \item -> do
-    fieldTitle <- getMetadataField (itemIdentifier item) "title"
-    isIndex    <- isJust <$> getMetadataField (itemIdentifier item) "isIndex"
-    let value = case (fieldTitle, isIndex) of
-                  (Just t, False)  -> stripTags t `mappend` " | "
-                  _ -> ""
-    return $ value `mappend` "Ondřej Slámečka"
-
-
-myDefaultContext = titleTagContext <> defaultContext
-
-
--- Distinguish different types of content
-data FileCategory = SCSS | HTML | Errors | Templates
-  deriving (Eq, Ord)
-
-
--- Patterns for different filetypes
-matchMap :: Map FileCategory Pattern
-matchMap = Data.Map.Strict.fromList
-  [ (SCSS, "css/*.scss")
-  , (HTML, ("*.html" .||. "**/*.html") .&&. complement (templates .||. errors))
-  , (Errors, errors)
-  , (Templates, templates)
-  ]
+removeIndexHtml :: Item String -> Compiler (Item String)
+removeIndexHtml item = return $ fmap (withUrls removeIndexStr) item
   where
-    templates = "templates/*"
-    errors = "e404.html"
-
-
--- Pattern for files not matched by any pattern in matchMap
-unmatched :: Pattern
-unmatched = complement $ foldr1 (.||.) matchMap
-
-
--- Pattern for files which should be ignored
-avoid :: Pattern
-avoid = fromList ["s5upload.yml", "site.hs", "stack.yaml", "slameckacz.cabal", "package.yaml"]
-
-
--- Compiles an HTML page (selects given layout and uses default context)
-compilePage = compile $ do
-  file <- getUnderlying
-  layoutMay <- getMetadataField file "layout"
-
-  page <- getResourceBody >>= applyAsTemplate myDefaultContext
-  case layoutMay of
-    Nothing     -> return page
-    Just layout -> loadAndApplyTemplate (template layout) myDefaultContext page
-
-  where
-    -- Return file identifier given a template name
-    template layout = fromFilePath $ "templates/" <> layout <> ".html"
-
-
-main :: IO ()
-main = hakyll $ do
-  match (unmatched .&&. complement avoid) $ do
-    route   idRoute
-    compile copyFileCompiler
-
-  match (matchMap ! SCSS) $ do
-    route $ setExtension "css"
-    let compressCssItem = fmap compressCss
-    compile (compressCssItem <$> sassCompiler)
-
-  match (matchMap ! Errors) $ do
-    route idRoute
-    compilePage
-
-  match (matchMap ! HTML) $ do
-    route niceRoute
-    compilePage
-
-  match (matchMap ! Templates) $ compile templateBodyCompiler
+    removeIndexStr :: String -> String
+    removeIndexStr url = case splitFileName url of
+        (dir, "index.html") | isLocal dir -> dir
+        _                                 -> url
+        where isLocal uri = not ("://" `isInfixOf` uri)

@@ -7,4 +7,3 @@ cache_control: # set max-age
     rules:
         '\.(ico|jpg|jpeg|png|gif)$': 31536000 # 365 days
         '\.(css|js)$': 604800 # a week
-

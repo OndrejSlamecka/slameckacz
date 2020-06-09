@@ -1,30 +1,36 @@
 ---
-title:   Ondřej Slámečka
-isIndex: True
-layout: default
+title: About Ondřej
 ---
 
-$partial("templates/header.html")$
-
 <p>
-I am a programmer interested in Haskell, algorithms and theoretical
-computer science.
-I currently work as a software developer of a high-frequency trading
-platform at <a href="https://www.gambitresearch.com/">Gambit Research</a>.
+I am a computer programmer interested in fast computing, mathematical approaches, and Haskell.
+I currently work on low-latency trading software at
+<a href="https://www.mavensecurities.com">Maven Securities</a>
+and also develop an online turn-based strategy game <a href="https://www.hexfray.com">Hexfray</a>.
 </p>
 
-<p>
-My e-mail address is <a href="mailto:ondrej@slamecka.cz">ondrej@slamecka.cz</a>.
-I am on <a href="https://github.com/OndrejSlamecka">GitHub</a>
-and <a href="https://twitter.com/OndrejSlamecka">Twitter</a>.
-</p>
+<ul>
+  <li><a href="mailto:ondrej@slamecka.cz">ondrej@slamecka.cz</a></li>
+  <li><a href="https://github.com/OndrejSlamecka">github.com/OndrejSlamecka</a></li>
+  <li><a href="https://twitter.com/OndrejSlamecka">twitter.com/OndrejSlamecka</a></li>
+</ul>
 
-<p>
-I wrote
-  a <a href="/fi/bc_thesis/">
-    bachelor's thesis about a new graph algorithm</a>,
-  a <a href="/fi/msc_thesis/">
-    master's thesis about using machine learning to verify properties of
-    probabilistic systems</a>.
-</p>
+<h2>Blog Posts</h2>
+  <ul class="post-list">
+    $for(posts)$
+      <li>
+        <a href="$url$">$title$</a>
+        <span>$date$</span>
+      </li>
+    $endfor$
+  </ul>
 
+<h2>Theses</h2>
+  <p>
+  I wrote
+    a <a href="/fi/bc_thesis/">
+      bachelor's thesis about a new graph algorithm</a>,
+    and a <a href="/fi/msc_thesis/">
+      master's thesis about using machine learning to verify properties of
+      probabilistic systems</a>.
+  </p>

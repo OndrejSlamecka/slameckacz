@@ -1,21 +1,49 @@
-<!doctype HTML>
+<!doctype html>
 <html lang="en">
+<!--
+  Hello!
+  See the whole source code at https://github.com/OndrejSlamecka/slameckacz
+-->
 <head>
-    <meta charset="utf8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--<link rel="canonical" href="{{site.url}}{{page.url | replace:'index.html',''}}">-->
-
-    <title>$titleTag$</title>
-
-    <!-- On Linux there is no font like Georgia. A good alternative would
-         be Buenard but it is probably not worth the loading time.
-    -->
-    <link rel="stylesheet" href="/css/main.css?v=2">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>$title$ - Ondřej Slámečka</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="container">
-$body$
-    </div> <!-- /.container -->
+  <header>
+    <div class="logo">
+        <a href="/">Ondřej Slámečka</a>
+    </div>
+    <nav>
+        <a href="/">About / Contact / Archive</a>
+    </nav>
+  </header>
+
+  <main role="main">
+    <h1>$title$</h1>
+    $body$
+  </main>
+
+  <footer>
+    <p>
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="display: inline-block;">
+        <img alt="Creative Commons Licence" style="display: inline-block; vertical-align: -4px;" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png">
+      </a>
+      <a href="https://github.com/OndrejSlamecka/slameckacz">
+        source
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    MathJax = {
+      tex: {
+        // Hakyll escape for dollar is double dollar
+        inlineMath: [['$$', '$$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </body>
 </html>
-
