@@ -8,7 +8,7 @@ import           System.FilePath.Posix (splitFileName, takeBaseName, takeDirecto
 main :: IO ()
 main =
   hakyll $ do
-    match ("images/*" .||. "fonts/*" .||. "fi/**/*.pdf") $ do
+    match ("images/**/*" .||. "fonts/*" .||. "fi/**/*.pdf") $ do
       route   idRoute
       compile copyFileCompiler
 
