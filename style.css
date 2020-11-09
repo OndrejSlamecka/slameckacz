@@ -528,6 +528,10 @@ img.align-center {
   margin: 0 auto;
 }
 
+figure {
+  margin: 2em 0;
+}
+
 hr {
   border: 0;
   border-top: 1px solid hsl(0, 0%, 59%);
@@ -573,3 +577,5 @@ pre.numberSource code > span:before {
     width: 2.5ex;
     line-height: 3.9ex;
 }
+
+code span.im { color: #007020; font-weight: bold; } /* Import; copied from Keyword */
