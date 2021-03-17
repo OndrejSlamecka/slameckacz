@@ -19,7 +19,7 @@ used visualisations, for example lectures on
 One technique I did not know before is *seam carving*. Let's say you have a picture of `Broadway
 tower<https://en.wikipedia.org/wiki/File:Broadway_tower_edit.jpg>`_.
 
-.. image:: /images/2021-01-24-seam-carving/broadway_tower_original.jpg
+.. image:: /assets/2021-01-24-seam-carving/broadway_tower_original.jpg
     :width: 640px
     :align: center
     :alt: Green grass, on top of it a person in the left, a tower in the right and vast sky with a few clouds in
@@ -29,7 +29,7 @@ But it's 640 pixels wide and you only have 400 pixels of space. Cropping would r
 the person, both prominent parts of the image. Scaling would distort the image. But you can use seam carving, to
 cut out *unimportant* pixels from the picture, while mostly maintaining continuity:
 
-.. image:: /images/2021-01-24-seam-carving/broadway_tower_carved.png
+.. image:: /assets/2021-01-24-seam-carving/broadway_tower_carved.png
     :width: 400px
     :align: center
     :alt: Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
@@ -70,7 +70,7 @@ filter<https://en.wikipedia.org/wiki/Sobel_operator>`_.
 This approach is very robust but we'll see we can improve results by tailoring a metric for a given image. Here
 we see its effect on our tower, greener means more energy.
 
-.. image:: /images/2021-01-24-seam-carving/broadway_tower_energy.png
+.. image:: /assets/2021-01-24-seam-carving/broadway_tower_energy.png
     :width: 640px
     :align: center
     :alt: Same image as the first one with person and tower and wide sky. But now transformed to only highlight
@@ -81,7 +81,7 @@ Let's see how it works for seam carving.
 Broadway Tower Energy
 ---------------------
 
-.. image:: /images/2021-01-24-seam-carving/broadway_tower_energy_carved.png
+.. image:: /assets/2021-01-24-seam-carving/broadway_tower_energy_carved.png
     :width: 400px
     :align: center
     :alt: Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
@@ -100,7 +100,7 @@ importance to dark pixels to fix the bottom right edge.
         min.(1, energy(img) .+ dark_relu.(img))
 
 
-.. image:: /images/2021-01-24-seam-carving/broadway_tower_darkness_carved.png
+.. image:: /assets/2021-01-24-seam-carving/broadway_tower_darkness_carved.png
     :width: 400px
     :align: center
     :alt: Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
@@ -126,7 +126,7 @@ pixels close to this colour.
         min.(1, energy(img) .+ dark_relu.(img) .+ beigness.(img))
 
 
-.. image:: /images/2021-01-24-seam-carving/broadway_tower_carved.png
+.. image:: /assets/2021-01-24-seam-carving/broadway_tower_carved.png
     :width: 400px
     :align: center
     :alt: Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
@@ -135,7 +135,7 @@ pixels close to this colour.
 
 Splendid! This is how it got there:
 
-.. image:: /images/2021-01-24-seam-carving/broadway_tower_carved.gif
+.. image:: /assets/2021-01-24-seam-carving/broadway_tower_carved.gif
     :width: 640px
     :align: center
     :alt: Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
@@ -147,14 +147,14 @@ Lighthouse Energy
 
 Let's try another picture, *lighthouse* from Julia's `TestImages<https://testimages.juliaimages.org/>`_.
 
-.. image:: /images/2021-01-24-seam-carving/lighthouse.png
+.. image:: /assets/2021-01-24-seam-carving/lighthouse.png
     :width: 640px
     :align: center
     :alt: Houses with a lighthouse on top of a cliff above sea.
 
 First, just with energy decided by edge detection.
 
-.. image:: /images/2021-01-24-seam-carving/lighthouse_energy_carved.png
+.. image:: /assets/2021-01-24-seam-carving/lighthouse_energy_carved.png
     :width: 400px
     :align: center
     :alt: Houses with a lighthouse on top of a cliff above sea, narrower but with a cut in the lighthouse.
@@ -163,7 +163,7 @@ That's an ugly cut in the lighthouse. An obvious idea is to consider bright pixe
 works out well. The building to the right from the lighthouse suffered this time but it's less noticeable and we
 even get more sea!
 
-.. image:: /images/2021-01-24-seam-carving/lighthouse_brightness_carved.png
+.. image:: /assets/2021-01-24-seam-carving/lighthouse_brightness_carved.png
     :width: 400px
     :align: center
     :alt: Houses with a lighthouse on top of a cliff above sea, narrower with without cut in the lighthouse.

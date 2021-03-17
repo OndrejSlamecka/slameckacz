@@ -67,7 +67,7 @@ The Markov chain has three states,
   * and the last digit is 2,
 * and one for when 22 was seen.
 
-.. image:: /images/2020-05-25-probability-of-22/markov-chain.svg
+.. image:: /assets/2020-06-09-probability-of-22/markov-chain.svg
     :width: 80%
     :align: center
     :alt: Markov chain with states "Neither", "Last is 2", "Seen 22"

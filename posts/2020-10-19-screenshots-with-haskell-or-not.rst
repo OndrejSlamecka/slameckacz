@@ -11,7 +11,7 @@ it show map previews. This article describes the road towards implementing the f
 encountered bumps.
 
 
-.. figure:: /images/2020-10-19-screenshots-with-haskell-or-not/54_preview.png
+.. figure:: /assets/2020-10-19-screenshots-with-haskell-or-not/54_preview.png
   :align: center
   :alt: Swampland by mahks
 
@@ -169,7 +169,7 @@ background transparency so we try that instead:
 Unfortunately you can still see a white background in this screenshot (unless I changed my blog's design to have
 a white background as well) *for some reason*.
 
-.. figure:: /images/2020-10-19-screenshots-with-haskell-or-not/with_background.png
+.. figure:: /assets/2020-10-19-screenshots-with-haskell-or-not/with_background.png
   :align: center
   :alt: Damned River by mahks, background still present
 
@@ -201,7 +201,7 @@ library<https://hackage.haskell.org/package/turtle>`_ for communicating with the
       ]
       mempty
 
-.. figure:: /images/2020-10-19-screenshots-with-haskell-or-not/18_preview.png
+.. figure:: /assets/2020-10-19-screenshots-with-haskell-or-not/18_preview.png
   :align: center
   :alt: Training Camp by mahks, background transparent
 
