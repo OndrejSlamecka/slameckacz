@@ -1,0 +1,21 @@
+// dot -Tsvg:cairo independent_formula.dot -o independent_formula.svg
+graph independent_formula {
+    compound=true
+    node[shape=none]
+
+    subgraph cluster1 {
+        x3[label=<x<sub>3</sub>>, fixedsize=true];
+        x2[label=<¬x<sub>2</sub>>, fixedsize=true];
+        x1[label=<x<sub>1</sub>>, fixedsize=true];
+    }
+    subgraph cluster2 {
+        x6[label=<x<sub>6</sub>>, fixedsize=true];
+        x5[label=<x<sub>5</sub>>, fixedsize=true];
+        x4[label=<¬x<sub>4</sub>>, fixedsize=true];
+    }
+    subgraph cluster3 {
+        x9[label=<¬x<sub>9</sub>>, fixedsize=true];
+        x8[label=<x<sub>8</sub>>, fixedsize=true];
+        x7[label=<x<sub>7</sub>>, fixedsize=true];
+    }
+}

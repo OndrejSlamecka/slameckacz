@@ -1,0 +1,25 @@
+// dot -Tsvg:cairo dependent_formula.dot -o dependent_formula.svg
+graph dependent_formula {
+    compound=true
+    node[shape=none]
+
+    subgraph cluster1 {
+        x13[label=<x<sub>3</sub>>, fixedsize=true];
+        x12[label=<x<sub>2</sub>>, fixedsize=true];
+        x11[label=<¬x<sub>1</sub>>, fixedsize=true];
+    }
+    subgraph cluster2 {
+        x26[label=<x<sub>6</sub>>, fixedsize=true];
+        x24[label=<¬x<sub>4</sub>>, fixedsize=true];
+        x22[label=<¬x<sub>2</sub>>, fixedsize=true];
+    }
+    subgraph cluster3 {
+        x31[label=<x<sub>1</sub>>, fixedsize=true];
+        x36[label=<x<sub>6</sub>>, fixedsize=true];
+        x37[label=<x<sub>7</sub>>, fixedsize=true];
+    }
+
+    x12 -- x22 [arrowhead=none, constraint=false];
+    x26 -- x36 [arrowhead=none, constraint=false];
+    x11 -- x31 [arrowhead=none, constraint=false];
+}
