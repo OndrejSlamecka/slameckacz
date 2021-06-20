@@ -2,7 +2,7 @@
 built with [LaTeX.css](https://latex.now.sh/), [Hakyll](https://jaspervdj.be/hakyll/), and [Nix](https://nixos.org/).
 
     # To build the site generator
-    nix-build --show-trace
+    nix-build --show-trace .
 
     # To preview locally
     ./result/bin/site watch
@@ -15,4 +15,4 @@ built with [LaTeX.css](https://latex.now.sh/), [Hakyll](https://jaspervdj.be/hak
 
 * Support for drafts https://www.jdreaver.com/posts/2014-06-22-math-programming-blog-hakyll.html
 * Better linebreaks https://github.com/robertknight/tex-linebreak
-* Use et-book, a font more suitable for screens [but only when it supports all necessary characters](https://github.com/edwardtufte/et-book/issues).
+* Use et-book, a font more suitable for screens [but only when it supports all necessary characters](https://github.com/edwardtufte/et-book/issues). Also consider Garvis by James Hultquist-Todd.
