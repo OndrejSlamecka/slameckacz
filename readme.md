@@ -8,7 +8,7 @@ built with [LaTeX.css](https://latex.now.sh/), [Hakyll](https://jaspervdj.be/hak
     ./result/bin/site watch
 
     # To deploy to AWS S3 + CloudFront
-    ./result/bin/site build && ../s5upload/s5upload.py
+    ./result/bin/site clean && ./result/bin/site build && ../s5upload/s5upload.py
 
 
 **Things I might add**
