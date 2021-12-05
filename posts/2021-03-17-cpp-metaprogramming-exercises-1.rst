@@ -2,6 +2,11 @@
 title: C++ Metaprogramming Exercises Vol. I
 ---
 
+This post is a part of a series:
+
+* C++ Metaprogramming Exercises Vol. I: Basics (this page)
+* `C++ Metaprogramming Exercises Vol. II: Algorithms </posts/2021-12-05-cpp-metaprogramming-exercises-2>`_
+
 Below is a set of exercises for type level programming in C++, suitable for newcomers to the topic but hopefully
 entertaining even for an intermediate template programmer. I made this when I decided to dedicate an evening to
 improving my fluency in the use of templates but couldn't easily find such exercises elsewhere.
