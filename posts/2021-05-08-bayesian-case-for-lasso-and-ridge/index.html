@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bayesian case for Lasso and Ridge</title>
+  <link rel="stylesheet" href="../../style.css?v1">
+</head>
+<body>
+  <main role="main">
+    <div class="index-link">
+  <a href="../../">‹ index</a>
+</div>
+<article>
+  <h1>Bayesian case for Lasso and Ridge</h1>
+  <section class="author">
+    May 2021
+  </section>
+  <section>
+    <p>Rob Tibshirani has been awarded the 2021 ISI Founders of Statistics Prize, and that’s
+<a href="https://www.slamecka.cz/posts/2021-04-02-lovasz-local-lemma/">again</a> a good reason to revisit one of my
+favourite topics, Lasso regression.</p>
+<p>Section five of the original paper
+<a href="https://www.jstor.org/stable/2346178">Regression Shrinkage and Selection via the Lasso</a> points out the Lasso
+coefficient estimate $\beta$ is the mode of a posterior distribution derived via Bayes theorem from a Laplace
+prior. The same can be proven for Ridge coefficient estimate when assuming a normal prior.</p>
+<p>Deriving the posterior distributions is a rather simple, purely technical procedure which is likely why it’s
+left out of the original paper but I found it a useful exercise and so I wrote it down here, together with
+an experimental check each method performs better on inputs produced using the theoretically more suitable
+distribution.</p>
+<h2 id="notation-preliminaries">Notation &amp; preliminaries</h2>
+<p>Firstly, $\lVert x \rVert_1 = \sum \lvert x_i \rvert$ and $\lVert x \rVert_2 = \sqrt{\sum x_i^2}$.</p>
+<p>Let $X$ be a real valued matrix of standardized (with mean 0, standard deviation 1) independent observations of
+features (in columns),
+let $\epsilon$ be an <em>irreducible error</em> vector,
+$\beta$ a vector of <em>coefficients</em>,
+and $y$ a <em>response</em> vector of real numbers,
+such that we get a <em>linear model</em> $y = X\beta + \epsilon$.</p>
+<p>In the following approaches we are given $X$ and $y$ and try to find $\hat\beta \approx \beta$ by solving an
+optimisation problem.</p>
+<p>The goal of <strong>linear</strong> regression is</p>
+<p>$$\min _\beta \; \lVert y - X\beta \rVert_2^2.$$</p>
+<p>For a given <em>tuning parameter</em> $t \geq 0$, the goal of <strong>Lasso</strong> regression is</p>
+<p>$$\min _\beta \; \lVert y - X\beta \rVert_2^2 \quad \text{subject to} \quad \lVert \beta \rVert_1 \leq t,$$</p>
+<p>or equivalently for some tuning parameter $\lambda$</p>
+<p>$$\min _\beta \; \lVert y - X\beta \rVert_2^2 + \lambda \lVert \beta \rVert_1.$$</p>
+<p>For a given tuning parameter $t \geq 0$, the goal of <strong>Ridge</strong> regression is</p>
+<p>$$\min _\beta \; \lVert y - X\beta \rVert_2^2 \quad \text{subject to} \quad \lVert \beta \rVert_2 \leq t,$$</p>
+<p>or equivalently for some tuning parameter $\lambda$</p>
+<p>$$\min _\beta \; \lVert y - X\beta \rVert_2^2 + \lambda \sum \lVert \beta \rVert_2.$$</p>
+<p>The aforementioned paper presents a convenient graphical view of the differences. On the left we see the
+rectangle of admissible solutions for Lasso together with contours of $\lVert y - X\beta \rVert^2 = \lVert
+\epsilon \rVert^2$ given by coefficients around the estimated $\hat\beta$. On the right we see a similar
+visualisation for Ridge.</p>
+<p><img src="../../assets/2021-05-08-bayesian-case-for-lasso-and-ridge/feasible.png" class="align-center" width="640" alt="Plot of feasible solutions to Lasso and Ridge regression." /></p>
+<p>Finally, recall the Bayes theorem for random variables $X, Y$ and their PDFs:</p>
+<p>$$f_{Y}(y \mid x) = \frac{f_{X}(x \mid y) f_Y(y)}{f_X(x)}$$</p>
+<p>For thorough explanation and practical concerns see
+<a href="https://web.stanford.edu/~hastie/ElemStatLearn/">Elements of Statistical Learning</a>.</p>
+<h2 id="bayesian-case-for-lasso">Bayesian case for Lasso</h2>
+<p>The above formulation of Lasso fits into the familiar bucket of techniques which introduce a penalty term on
+top of a basic goal. However, there’s also a Bayesian way to arrive to the Lasso estimate.
+Assume the <em>prior</em> distribution of each $\beta_i$ is the Laplace distribution (visualised below) with PDF
+$\frac{1}{2b} \exp(- \lvert \beta_i \rvert / b)$
+for some parameter $b$, and the vector $\beta$ has distribution
+$\prod \frac{1}{2b} \exp(- \lvert \beta_i \rvert / b)$.</p>
+<p><img src="../../assets/2021-05-08-bayesian-case-for-lasso-and-ridge/laplace.png" class="align-center" width="320" alt="Plot of Laplace distribution." /></p>
+<p>Further assume that each error term is normally distributed with mean 0 and standard deviation $\sigma$.
+With $y$ and $X$ otherwise fixed, and since product of normal distributions is normally distributed this gives
+us <em>likelihood</em></p>
+<p>$$\prod_i^n \frac{1}{\sigma\sqrt{2\pi}} \exp\bigl( \frac{-\epsilon_i^2}{2 \sigma^2} \bigr)$$</p>
+<p>By multiplying the likelihood with the prior we get the <em>posterior</em> distribution, up to a multiplicative
+constant (the inverse of the denominator in Bayes’ theorem),</p>
+<blockquote>
+<p>$$\prod_i^n \frac{1}{\sigma\sqrt{2\pi}} \exp\bigl( \frac{-\epsilon_i^2}{2 \sigma^2} \bigr) \cdot \prod_j^p \frac{1}{2b} \exp(- \lvert \beta_j \rvert)$$</p>
+</blockquote>
+<p>Which is equal to the following formula which will be directly useful later.</p>
+<blockquote>
+<p>$$\bigl(\frac{1}{\sigma\sqrt{2\pi}}\bigr)^n \exp\bigl( \sum_i^n \frac{-\epsilon_i^2}{2 \sigma^2} \bigr) \cdot \frac{1}{2b} \exp(-\frac{1}{b} \sum_j^p \lvert\beta_j\rvert) = $$</p>
+<p>$$= \frac{1}{2b} \bigl(\frac{1}{\sigma\sqrt{2\pi}}\bigr)^n \exp\bigl( -\frac{1}{2 \sigma^2} \sum_i^n \epsilon_i^2 - \frac{1}{b} \sum_j^p \lvert\beta_j\rvert \bigr)$$</p>
+</blockquote>
+<p>We want to show the Lasso estimate is the mode for $\beta$ under the distribution above. That is, the $\beta$
+that maximises the posterior is the one given by Lasso. That turns the problem into the following optimisation.</p>
+<blockquote>
+<p>$$\max _{\beta} \frac{1}{2b} \bigl(\frac{1}{\sigma\sqrt{2\pi}}\bigr)^n \exp\bigl( -\frac{1}{2 \sigma^2} \sum_i^n \epsilon_i^2 - \frac{1}{b} \sum_j^p \lvert\beta_j\rvert \bigr)$$</p>
+</blockquote>
+<p>Logarithm is a monotonic increasing function so we can apply it while maintaining maxima.</p>
+<blockquote>
+<p>$$\max _{\beta} \log(\frac{1}{2b} \bigl(\frac{1}{\sigma\sqrt{2\pi}}\bigr)^n) - ( \frac{1}{2 \sigma^2} \sum_i^n \epsilon_i^2 + \frac{1}{b} \sum_j^p \lvert\beta_j\rvert )$$</p>
+</blockquote>
+<p>The first term does not depend on $\beta$ and thus maximizing the objective without this term is equivalent.
+Let’s also drop the minus, changing the optimisation to minimum.</p>
+<blockquote>
+<p>$$\min _{\beta} \frac{1}{2 \sigma^2} \sum_i^n \epsilon_i^2 + \frac{1}{b} \sum_j^p \lvert\beta_j\rvert$$</p>
+</blockquote>
+<p>Let $\lambda = 2\sigma^2 / b$ and we get the Lasso objective as we wanted.</p>
+<blockquote>
+<p>$$\min _{\beta} \sum_i^n \epsilon_i^2 + \lambda \sum_j^p \rvert\beta_j\rvert$$</p>
+</blockquote>
+<h2 id="bayesian-case-for-ridge">Bayesian case for Ridge</h2>
+<p>An analogical statement, with the same assumption for $\epsilon$, is true for Ridge regression, just with a
+normal prior. The derivation is mostly the same but shown below for completeness.</p>
+<p>Before proceeding to the analogous argument there’s an extra thing to note. Since the product of normal PDFs is
+normal, and in normal distribution mode and mean coincide, the estimate is also the mean of the posterior
+distribution.</p>
+<p>In the normal prior setting, for each $\beta_j$ the PDF is
+$\frac{1}{\sqrt{2c\pi}} \exp(-\frac{\beta_j^2}{2c})$
+for some parameter $c$ and together for the vector $\beta$ it is
+$\prod_j^p \frac{1}{\sqrt{2c\pi}} \exp(-\frac{\beta_j^2}{2c})$.</p>
+<p><img src="../../assets/2021-05-08-bayesian-case-for-lasso-and-ridge/normal.png" class="align-center" width="320" alt="Plot of normal distribution." /></p>
+<p>The posterior is then</p>
+<blockquote>
+<p>$$\prod_i^n \frac{1}{\sigma\sqrt{2\pi}} \exp\bigl( -\frac{\epsilon_i^2}{2 \sigma^2} \bigr) \cdot \prod_j^p \frac{1}{\sqrt{2c\pi}} \exp(-\frac{\beta_j^2}{2c}) =$$</p>
+<p>$$= \bigl(\frac{1}{\sigma\sqrt{2\pi}}\bigr)^n \exp\bigl(- \sum_i^n \frac{\epsilon_i^2}{2 \sigma^2} \bigr) \cdot \bigl(\frac{1}{\sqrt{2c\pi}}\bigr)^p \exp(-\sum_j^p \frac{\beta_j^2}{2c})$$</p>
+</blockquote>
+<p>And we can proceed as before</p>
+<blockquote>
+<p>$$\max _{\beta} \log \Bigl( \bigl(\frac{1}{\sigma\sqrt{2\pi}}\bigr)^n \bigl(\frac{1}{\sqrt{2c\pi}}\bigr)^p \Bigr) - \sum_i^n \frac{\epsilon_i^2}{2 \sigma^2} - \sum_j^p \frac{\beta_j^2}{2c}$$</p>
+<p>$$\min _{\beta} \sum_i^n \frac{\epsilon_i^2}{2 \sigma^2} + \sum_j^p \frac{\beta_j^2}{2c}$$</p>
+<p>$$\min _{\beta} \frac{1}{2\sigma^2} \bigl( \sum_i^n \epsilon_i^2 + \frac{2\sigma^2}{2c} \sum_j^p \beta_j^2 \bigr)
+$$</p>
+<p>$$\min _{\beta} \sum_i^n \epsilon_i^2 + \frac{2\sigma^2}{2c} \sum_j^p \beta_j^2
+$$</p>
+</blockquote>
+<p>Choose $\lambda = \sigma^2/c$.</p>
+<blockquote>
+<p>$$\min _{\beta} \sum_i^n \epsilon_i^2 + \lambda \sum_j^p \beta_j^2$$</p>
+</blockquote>
+<h2 id="experimental-comparison">Experimental comparison</h2>
+<p>To show the difference is not purely theoretical I did a simple experiment (using Julia) which randomly
+generates $X$, $\epsilon$, $\beta_l$ with Laplace distribution, $\beta_r$ with normal distribution and
+compares performance of Lasso and Ridge (with auto-tuned $\lambda$) on this data. Note that I used a fairly
+high number of features to make sure the choice of distribution reflects clearly in the data, for smaller
+numbers the results weren’t as persuasive.</p>
+<p>Out of 100 repetitions Ridge beat Lasso in 89 cases on data with normal distribution of coefficients and Lasso
+beat Ridge in 76 cases on data with Laplace distribution of coefficients.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>, <span class="bu">Random</span>, <span class="bu">MLJ</span>, <span class="bu">MLJLinearModels</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="fl">100</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>ridge_performs_better_on_rdata <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>lasso_performs_better_on_ldata <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># data with responses with suitable for Lasso and Ridge</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    (X, yₗ, yᵣ) <span class="op">=</span> <span class="kw">let</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> <span class="fl">1000</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        p <span class="op">=</span> <span class="fl">500</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        X, ϵ <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), n, p), <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, p<span class="op">*</span><span class="fl">0.2</span>), n)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        βₗ, βᵣ <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Laplace</span>(<span class="fl">0</span>, <span class="fl">25</span>), p), <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">25</span>), p)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        yₗ, yᵣ <span class="op">=</span> X<span class="op">*</span>βₗ <span class="op">+</span> ϵ, X<span class="op">*</span>βᵣ <span class="op">+</span> ϵ</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        (X, yₗ, yᵣ)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># train test split</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    train, test <span class="op">=</span> <span class="fu">partition</span>(<span class="fu">eachindex</span>(yₗ), <span class="fl">0.7</span>, shuffle<span class="op">=</span><span class="cn">true</span>, rng<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ridge machines on ridge suitable and lasso suitable data</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    (tuned_ridge_machine_rdata, tuned_ridge_machine_ldata) <span class="op">=</span> <span class="kw">let</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        ridge <span class="op">=</span> <span class="fu">RidgeRegressor</span>()</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        tuned_ridge <span class="op">=</span> <span class="fu">TunedModel</span>(</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span>ridge,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>            ranges<span class="op">=</span><span class="fu">range</span>(ridge, <span class="op">:</span>lambda, lower<span class="op">=</span><span class="fl">1e-2</span>, upper<span class="op">=</span><span class="fl">10_000</span>, scale<span class="op">=:</span>log10),</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            tuning<span class="op">=</span><span class="fu">Grid</span>(resolution<span class="op">=</span><span class="fl">50</span>),</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            resampling<span class="op">=</span><span class="fu">CV</span>(nfolds<span class="op">=</span><span class="fl">5</span>),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>            measure<span class="op">=</span>rms)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        tuned_ridge_machine_rdata <span class="op">=</span> <span class="fu">machine</span>(tuned_ridge, X, yᵣ)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        <span class="fu">fit!</span>(tuned_ridge_machine_rdata, rows<span class="op">=</span>train)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        tuned_ridge_machine_ldata <span class="op">=</span> <span class="fu">machine</span>(tuned_ridge, X, yₗ)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">fit!</span>(tuned_ridge_machine_ldata, rows<span class="op">=</span>train)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        (tuned_ridge_machine_rdata, tuned_ridge_machine_ldata)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># lasso machines on ridge suitable and lasso suitable data</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    (tuned_lasso_machine_rdata, tuned_lasso_machine_ldata) <span class="op">=</span> <span class="kw">let</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        lasso <span class="op">=</span> <span class="fu">LassoRegressor</span>()</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>        tuned_lasso <span class="op">=</span> <span class="fu">TunedModel</span>(</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span>lasso,</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>            ranges<span class="op">=</span><span class="fu">range</span>(lasso, <span class="op">:</span>lambda, lower<span class="op">=</span><span class="fl">1e-2</span>, upper<span class="op">=</span><span class="fl">10_000</span>, scale<span class="op">=:</span>log10),</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>            tuning<span class="op">=</span><span class="fu">Grid</span>(resolution<span class="op">=</span><span class="fl">250</span>), <span class="co"># lasso lambda tends to be higher and our scale is log10</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>            resampling<span class="op">=</span><span class="fu">CV</span>(nfolds<span class="op">=</span><span class="fl">5</span>),</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>            measure<span class="op">=</span>rms)</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>        tuned_lasso_machine_rdata <span class="op">=</span> <span class="fu">machine</span>(tuned_lasso, X, yᵣ)</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        <span class="fu">fit!</span>(tuned_lasso_machine_rdata, rows<span class="op">=</span>train)</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        tuned_lasso_machine_ldata <span class="op">=</span> <span class="fu">machine</span>(tuned_lasso, X, yₗ)</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>        <span class="fu">fit!</span>(tuned_lasso_machine_ldata, rows<span class="op">=</span>train)</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>        (tuned_lasso_machine_rdata, tuned_lasso_machine_ldata)</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>    <span class="co"># evaluate</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>    rms_ridge_rdata <span class="op">=</span> <span class="fu">rms</span>(yᵣ[test], <span class="fu">predict</span>(tuned_ridge_machine_rdata, rows<span class="op">=</span>test))</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>    rms_lasso_rdata <span class="op">=</span> <span class="fu">rms</span>(yᵣ[test], <span class="fu">predict</span>(tuned_lasso_machine_rdata, rows<span class="op">=</span>test))</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>    rms_ridge_ldata <span class="op">=</span> <span class="fu">rms</span>(yₗ[test], <span class="fu">predict</span>(tuned_ridge_machine_ldata, rows<span class="op">=</span>test))</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    rms_lasso_ldata <span class="op">=</span> <span class="fu">rms</span>(yₗ[test], <span class="fu">predict</span>(tuned_lasso_machine_ldata, rows<span class="op">=</span>test))</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>    ridge_performs_better_on_rdata <span class="op">+=</span> <span class="fu">Int</span>(rms_ridge_rdata <span class="op">&lt;</span> rms_lasso_rdata)</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>    lasso_performs_better_on_ldata <span class="op">+=</span> <span class="fu">Int</span>(rms_ridge_ldata <span class="op">&gt;</span> rms_lasso_ldata)</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(ridge_performs_better_on_rdata, lasso_performs_better_on_ldata)</span></code></pre></div>
+  </section>
+</article>
+
+  </main>
+
+  <footer>
+    <p>
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="display: inline-block;">
+        <img alt="Creative Commons Licence" style="display: inline-block; vertical-align: -4px;" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png">
+      </a>
+      <a href="https://github.com/OndrejSlamecka/slameckacz">
+        source
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    MathJax = {
+      tex: {
+        // Hakyll escape for dollar is double dollar
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

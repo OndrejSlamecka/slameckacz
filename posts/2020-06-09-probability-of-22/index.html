@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Probability of 22</title>
+  <link rel="stylesheet" href="../../style.css?v1">
+</head>
+<body>
+  <main role="main">
+    <div class="index-link">
+  <a href="../../">‹ index</a>
+</div>
+<article>
+  <h1>Probability of 22</h1>
+  <section class="author">
+    June 2020
+  </section>
+  <section>
+    <p>Imagine a random process generating a sequence of numbers, picking $0,1,2$ in each place with uniform
+probability. What is the probability $p_n$ that two consecutive 2 appear in a sequence $n$ numbers long?</p>
+<h2 id="first-solution">First solution</h2>
+<p>Firstly, when the sequence is empty or has one element, the probability is 0. Now let’s say the sequence has
+$k &gt; 1$ elements.</p>
+<p>If the $k$-th element is different from 2 (with probability 2/3), then nothing changes here and thus
+$p_k = \frac{2}{3} p _{k-1}$.</p>
+<p>If the $k$-th element is 2 (with probability 1/3), then</p>
+<ul>
+<li>if $(k-1)$-st is different from 2 (with probability $1/3 \cdot 2/3$),
+then nothing changes here and thus $p_k = \frac{1}{3} \frac{2}{3} p _{k-2}$, or</li>
+<li>if $(k-1)$-st is 2 (with probability $1/3 \cdot 1/3$), then we found 22.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">p ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Double</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>p <span class="dv">0</span> <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>p <span class="dv">1</span> <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>p k <span class="ot">=</span> <span class="dv">2</span><span class="op">/</span><span class="dv">3</span> <span class="op">*</span> p (k<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="op">+</span> <span class="co">-- k-th element being = 2 or /= 2 is mutually exclusive</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span><span class="op">/</span><span class="dv">3</span> <span class="op">*</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>            (<span class="dv">1</span><span class="op">/</span><span class="dv">3</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>             <span class="op">+</span> <span class="co">-- (k-1)-st element being = 2 or /= 2 is exclusive</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>             <span class="dv">2</span><span class="op">/</span><span class="dv">3</span> <span class="op">*</span> p (k<span class="op">-</span><span class="dv">2</span>))</span></code></pre></div>
+<p>This method of computing $p_n$ grows exponentially slower with increasing $n$. Thankfully, the recurring computations are overlapping
+and dynamic programming can be employed, either using <code>Data.Function.Memoize</code> from the <code>memoize</code>
+package, or <code class="interpreted-text" role="python">functools.lru_cache</code> if you’re in Python, or maybe with bottom-up pre-computing.</p>
+<h2 id="markov-solution">Markov solution</h2>
+<p>However,
+since the generating process is a discrete-time Markov chain,
+there’s a nicer way to solve the problem.
+The Markov chain has three states,</p>
+<ul>
+<li>two for when 22 has not been seen
+<ul>
+<li>and the last digit is 0 or 1 (for the first digit take $x$ to be empty),</li>
+<li>and the last digit is 2,</li>
+</ul></li>
+<li>and one for when 22 was seen.</li>
+</ul>
+<p><img src="../../assets/2020-06-09-probability-of-22/markov-chain.svg" class="align-center" style="width:80.0%" alt="Markov chain with states &quot;Neither&quot;, &quot;Last is 2&quot;, &quot;Seen 22&quot;" /></p>
+<p>If we represent the probability of the three states with a triplet/vector (in the same order as above)
+then the initial state is $b$ and we can also translate the graph into a transition matrix $P$.</p>
+<p>$$
+b =
+\begin{pmatrix}
+1, 0, 0
+\end{pmatrix},
+P =
+\begin{pmatrix}
+2/3 &amp; 1/3 &amp; 0 \\
+2/3 &amp; 0 &amp; 1/3 \\
+0 &amp; 0 &amp; 1
+\end{pmatrix}
+$$</p>
+<p>And now $p_k$ is the rightmost element of $b \cdot P^k$.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Matrix</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">b ::</span> <span class="dt">Matrix</span> <span class="dt">Double</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>b <span class="ot">=</span> fromLists [ [ <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span> ] ]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ot">matP ::</span> <span class="dt">Matrix</span> <span class="dt">Double</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>matP <span class="ot">=</span> fromLists</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>         [ [<span class="dv">2</span><span class="op">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>,   <span class="dv">0</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>         , [<span class="dv">2</span><span class="op">/</span><span class="dv">3</span>,   <span class="dv">0</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>]</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>         , [  <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">1</span>]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>         ]</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ot">p' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Double</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>p' <span class="dv">0</span> <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>p' k <span class="ot">=</span> getElem <span class="dv">1</span> <span class="dv">3</span> (b <span class="op">*</span> matP<span class="op">^</span>k)</span></code></pre></div>
+<h2 id="exponentiation-by-squaring">Exponentiation by squaring</h2>
+<p>To make sure <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">exponentiation by squaring</a>
+is used (it should be since matrices with multiplication form a semigroup) I added a quick naive implementation
+which surely escapes this optimisation and then compared them in GHCi (a disclaimer applies that the usual GHC
+optimisations are missing too).</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- slowp' k = getElem 1 3 (b * (foldr1 multStd (replicate k matP)))</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> <span class="op">:</span>set <span class="op">+</span>s</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> p' <span class="dv">100000</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fl">0.9999999999999998</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ot">it ::</span> <span class="dt">Double</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>(<span class="fl">0.02</span> secs, <span class="dv">223</span>,<span class="dv">744</span> bytes)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> slowp' <span class="dv">100000</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fl">0.9999999999999982</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ot">it ::</span> <span class="dt">Double</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>(<span class="fl">0.50</span> secs, <span class="dv">339</span>,<span class="dv">976</span>,<span class="dv">496</span> bytes)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- and also</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> memoizedp <span class="dv">100000</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fl">0.9999999999999982</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="ot">it ::</span> <span class="dt">Double</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>(<span class="fl">0.78</span> secs, <span class="dv">1</span>,<span class="dv">129</span>,<span class="dv">307</span>,<span class="dv">904</span> bytes)</span></code></pre></div>
+<p>In fact, exponentiation by squaring is so good that computation is quick even for very big $n$
+and floating point error becomes the main concern.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> p' (<span class="dv">10</span><span class="op">^</span><span class="dv">10000</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fl">0.9999999999999998</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ot">it ::</span> <span class="dt">Double</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>(<span class="fl">0.37</span> secs, <span class="dv">357</span>,<span class="dv">373</span>,<span class="dv">144</span> bytes)</span></code></pre></div>
+<h2 id="final-trick">Final trick</h2>
+<p>But since we have a matrix we can try diagonalising it. Once we have a diagonalisation $P = S \cdot J \cdot
+S^{-1}$, calculating $P^k$ reduces to calculating powers of real numbers thanks to diagonal $J$. Multiplying
+$P^k$ by $b$ from the left and then picking the rightmost item yields a formula which uses only simple
+operations. I <a href="https://www.wolframalpha.com/input/?i=%281%2C0%2C0%29+%7B%282%2F3%2C+1%2F3%2C+0%29%2C+%282%2F3%2C+0%2C+1%2F3%29%2C+%280%2C+0%2C+1%29%7D%5Ek">let Wolfram Alpha do this</a>
+for me and modified the result just enough to make it valid Haskell.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ot">p'' ::</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Double</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>p'' <span class="dv">0</span> <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>p'' <span class="dv">1</span> <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>p'' k <span class="ot">=</span>   <span class="dv">1</span><span class="op">/</span><span class="dv">4</span> <span class="op">*</span> (<span class="fu">sqrt</span>(<span class="dv">3</span>) <span class="op">-</span> <span class="dv">1</span>)<span class="op">^</span><span class="dv">2</span> <span class="op">*</span> <span class="dv">3</span><span class="op">**</span>(<span class="op">-</span>k <span class="op">-</span> <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>) <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> <span class="fu">sqrt</span>(<span class="dv">3</span>))<span class="op">**</span>k</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">-</span> <span class="dv">1</span><span class="op">/</span><span class="dv">4</span> <span class="op">*</span> <span class="dv">3</span><span class="op">**</span>(<span class="op">-</span>k <span class="op">-</span> <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>) <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> <span class="fu">sqrt</span>(<span class="dv">3</span>))<span class="op">**</span>(k <span class="op">+</span> <span class="dv">2</span>) <span class="op">+</span> <span class="dv">1</span></span></code></pre></div>
+<p>This solution has an interesting property:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> p'' <span class="dv">10</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fl">0.5773002083015804</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ot">it ::</span> <span class="dt">Double</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> p'' <span class="dv">500</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fl">1.0</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ot">it ::</span> <span class="dt">Double</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">*</span><span class="dt">Main</span><span class="op">&gt;</span> p'' <span class="dv">1000</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">NaN</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ot">it ::</span> <span class="dt">Double</span></span></code></pre></div>
+  </section>
+</article>
+
+  </main>
+
+  <footer>
+    <p>
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="display: inline-block;">
+        <img alt="Creative Commons Licence" style="display: inline-block; vertical-align: -4px;" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png">
+      </a>
+      <a href="https://github.com/OndrejSlamecka/slameckacz">
+        source
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    MathJax = {
+      tex: {
+        // Hakyll escape for dollar is double dollar
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>
