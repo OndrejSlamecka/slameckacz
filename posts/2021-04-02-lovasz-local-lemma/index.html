@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lovász Local Lemma</title>
+  <link rel="stylesheet" href="../../style.css?v1">
+</head>
+<body>
+  <main role="main">
+    <div class="index-link">
+  <a href="../../">‹ index</a>
+</div>
+<article>
+  <h1>Lovász Local Lemma</h1>
+  <section class="author">
+    April 2021
+  </section>
+  <section>
+    <p>The 2021 Abel Prize has been awarded to László Lovász and Avi Wigderson which is a great opportunity to revisit
+one of my favourite tricks, the probabilistic method. This method was developed by Paul Erdős (see <em>My Brain is
+Open</em> by Schechter for a biography) originally as a way to prove existence of combinatorial objects but it has
+enjoyed broad applications in other areas, including algorithm design.</p>
+<p>In this post I present the probabilistic method, the titular lemma which is a mighty weapon when using the
+method, its application in an existential proof, and finally an algorithm supported by the lemma. What you read
+here is based on lectures <em>Randomized Algorithms and Computing</em> by <a href="https://www.fi.muni.cz/usr/gruska">Jozef
+Gruska</a> (which I attended) and the book <em>Probability and Computing</em> by
+Mitzenmacher and Upfal, which contains a whole chapter on the topic.</p>
+<h2 id="the-probabilistic-method">The probabilistic method</h2>
+<p>The idea of the probabilistic method is both very original and simple in its principle. If you want to prove an
+object exists, just prove it has a non-zero probability of occurring in some sample space. One approach is to
+directly show the non-zero probability.</p>
+<p>Another approach is to consider the expected value of a random variable $X$. If the expected value of $X$ is
+$mu$ then you’re guaranteed there exists an object for which $X$ is at least $mu$ and an object for which $X$ is
+at most $mu$ (possibly the same object). Stated formally as a lemma that follows from a short argument based on
+contradiction:</p>
+<p><strong>Lemma.</strong> <em>Let $X$ be a random variable with $\mathbb{E}(X) = μ$. Then $Pr(X \geq μ) &gt; 0$ and $Pr(X \leq μ) &gt; 0$.</em></p>
+<p>For an example of this approach take the MAXSAT problem, where you try to maximise as many clauses of a given
+formula as possible. Recall that formulas are built on variables ($x_i$) that make up literals (either $x_i$ or
+$¬x_i$) which are joined by disjunction (“or”) into clauses (e.g. $x_1 ∨ ¬x_2$) which are joined by conjunction
+(“and”) into a formula (e.g. $(x_1 ∨ ¬x_2) ∧ (x_2 ∨ x_3)$).</p>
+<p>To make our investigation a bit simpler let’s assume MAXSAT does not contain formulas where a single clause
+contains both a variable and its negation. We can omit these without loss of generality as such clauses are
+clearly satisfied.</p>
+<p><strong>Theorem.</strong> <em>Given a formula with $m$ clauses and $k_i$ literals in the $i$-th clause.
+Let $k$ be the minimum of all $k_i$. Then there is a truth assignment that satisfies at least</em>
+$$
+\sum _{i=1}^m (1-2^{-k_i}) \geq m(1-2^{-k})
+$$
+<em>clauses.</em></p>
+<p>Note that $1-2^{-k}$ approaches 1 very quickly with growing $k$.</p>
+<p><strong>Proof.</strong> Pick a true/false assignment for each variable with an (unbiased) coin toss.
+Define the random variable $I_i$ to be 1 if $i$-th clause is satisfied and 0 otherwise.
+Let $X$ be the random variable representing the number of satisfied clauses.</p>
+<p>Then $Pr(I_i = 1) = 1-2^{-k_i}$ and, by linearity of expectation,</p>
+<p>$$
+\mathbb{E}(X)
+= \mathbb{E}\bigl(\sum I_i\bigr)
+= \sum \mathbb{E}(I_i)
+= \sum 1-2^{-k_i}
+\geq m(1-2^{k})
+$$</p>
+<p>Finally, by the lemma above, the theorem follows. ∎</p>
+<h2 id="independent-and-only-locally-dependent-events">Independent and only locally dependent events</h2>
+<p>That was maximising the number of satisfied clauses (MAXSAT). Now consider formulas again but restrict the
+number of literals in every clause to be exactly $k$ and check whether the whole formula is satisfiable. This is
+the k-SAT problem. When a clause has fewer than $k$ literals it can be padded with new variables so the problem
+isn’t as constrained as it might seem at first.</p>
+<p>Here’s an example instance:</p>
+<p>$$
+(x_1 ∨ ¬x_2 ∨ x_3) ∧ (¬x_4 ∨ x_5 ∨ x_6) ∧ (x_7 ∨ x_8 ∨ ¬x_9)
+$$</p>
+<p>One interesting property of this example is that no variable appears in two formulas.
+That’s a convenient setting for a probabilistic approach: we can consider the satisfiability of each clause
+separately and then calculate the product of <strong>independent</strong> events.</p>
+<p>We can call $E_i$ the event that $i$-th clause is <em>not</em> satisfied. When we assign values to variables by an
+unbiased coin toss again then $Pr(E_i) = 1 - 2^k$.
+We would like to reason about the probability of all clauses being satisfied, $\bigcap \neg E_i$,
+and in this particular example we know all $E_i$ are
+independent so we can conclude $Pr(\bigcap \neg E_i) = \prod Pr(\neg E_i) &gt; 0$.</p>
+<p>What we’ve just done here – proved a formula of the shape $Pr(\bigcap \neg E_i) &gt; 0$ –
+is the third approach to probabilistic method.</p>
+<p>But that was a lucky example. To visualise the independence we used, imagine a graph, where clauses are vertices
+and an edge exists between two clauses if and only if they share a variable. For our formula (copied below) there
+are no edges:</p>
+<p>$$
+(x_1 ∨ ¬x_2 ∨ x_3) ∧ (¬x_4 ∨ x_5 ∨ x_6) ∧ (x_7 ∨ x_8 ∨ ¬x_9)
+$$</p>
+<p><img src="../../assets/2021-04-02-lovasz-local-lemma/independent_formula.svg" class="align-center" style="width:100.0%" alt="Formula" /></p>
+<p>Now consider the following formula and the corresponding dependency graph:</p>
+<p>$$
+(¬x_1 ∨ x_2 ∨ x_3) ∧ (¬x_2 ∨ ¬x_4 ∨ x_6) ∧ (x_7 ∨ x_6 ∨ x_1)
+$$</p>
+<p><img src="../../assets/2021-04-02-lovasz-local-lemma/dependent_formula.svg" class="align-center" style="width:100.0%" alt="Formula" /></p>
+<p>Suddenly the jump straight from $Pr(\bigcap \ldots)$ to $\prod Pr(\ldots)$ is not possible.</p>
+<p>But notice there are only a few edges. And in bigger graphs edges could possibly be rare enough to actually make
+the problem resemble many small independent problems.</p>
+<p>This is where the genius of Lovász and his <strong>Local</strong> Lemma appears: if the dependencies between events are only
+of a local character then the probabilty of them occuring simultaneously can still be bounded by an inequality
+of the shape $Pr(\bigcap \ldots) \geq \prod Pr(\ldots)$. Here’s a formal statement of a variant that
+arrives to a simpler inequality of the form $Pr(\bigcap \ldots) &gt; 0$:</p>
+<p><strong>Theorem.</strong> <em>Let $E_1,…,E_n$ be events and assume there are $p,d$ such that all of the following hold:</em></p>
+<ol type="1">
+<li><em>for all $i$, $Pr(E_i) \leq p$</em>,</li>
+<li><em>the degree of the dependency graph of $E_1,…,E_n$ is at most $d$</em>,</li>
+<li>$4dp \leq 1$.</li>
+</ol>
+<p><em>Then</em>
+$$
+Pr \Bigl(\bigcap _{i=1}^{n} \neg E_i \Bigr) &gt; 0.
+$$</p>
+<p>For a proof I’ll refer the reader to <em>Probability and Computating</em> mentioned above. Let’s again assume without
+loss of generality there are no formulas where a single clause contains both a variable and its negation, and
+now let’s just apply the lemma to kSAT.</p>
+<p><strong>Theorem.</strong> <em>If no variable in a k-SAT formula appears in more than $T=2^k/4k$ clauses, then the formula has a
+satisfying assignment.</em></p>
+<p><strong>Proof.</strong>
+Let’s pick a true/false assignment for each variable with an (unbiased) coin toss.</p>
+<p>Consider $E_i$, the event $i$-th clause is <em>not</em> satisfied. We want to prove that the probability of all
+opposite events ($\neg E_i$, $i$-th clause <em>is</em> satisfied) occuring together is greater than 0, that is $Pr
+\bigl(\bigcap _{i=1}^{n} \neg E_i \bigr) &gt; 0$.</p>
+<p>We check the conditions of Lovász local lemma:</p>
+<ol type="1">
+<li>Each clause has $k$ literals, so each clause is satisfied with probability $Pr(E_i) = 2^{-k}$, and so
+$p = 2^{-k}$.</li>
+<li>Each literal appears in at most $T=2^k/4k$ clauses and each clause has exactly $k$ literals, so the degree
+$d$ is at most $kT = 2^k/4$.</li>
+<li>$4dp = 4 \cdot \frac{2^k}{4} \cdot 2^{-k} = 1 \leq 1$.</li>
+</ol>
+<p>All the conditions are satisfied and thus the theorem follows. ∎</p>
+<h2 id="towards-an-algortihm-for-k-sat">Towards an algortihm for k-SAT</h2>
+<p>There is an obvious algorithm that finds a satisfying assignment: pick an assignment at random and check if the
+formula is satisfied, repeat if not. But even though this algorithm is guaranteed by the theorem to find a
+solution, the time it takes might be exponential in the problem size.</p>
+<h3 id="assumptions-for-a-faster-algorithm">Assumptions for a faster algorithm</h3>
+<p>Let’s investigate an algorithm that is faster and still simple to state but the proof of its correctness
+and complexity is significantly more involved, even when we add further assumptions about the problem that
+alleviate two sources of slowness:</p>
+<ol type="1">
+<li>$k$ has to be fixed,</li>
+<li>in each formula, each variable appears in no more than $T = 2^{\alpha k}$ clauses, for a sufficiently small
+$\alpha &gt; 0$.</li>
+</ol>
+<p><strong>Theorem.</strong> <em>There is an algorithm finding satisfying assignments for k-SAT formulas that meet the above
+conditions, which runs in expected polynomial time.</em></p>
+<p>The first condition is restrictive but even for a fixed $k \geq 3$ the corresponding unrestricted decision variant
+of k-SAT is NP-hard and so this condition does not make the problem trivial.</p>
+<p>The second condition is needed to guarantee locality of dependency and its value depends on the structure
+of the problem. We will arrive at one formula bounding $\alpha$ but <em>Probability and Computing</em> has the full
+proof, including all constraints on $\alpha$.</p>
+<h3 id="the-algorithm">The algorithm</h3>
+<p>Firstly, assume without loss of generality that $k$ is even. Let $l$ be the number of variables and $m$ the
+number of clauses in the given formula. Further, we call a clause <em>dangerous</em> if $k/2$ of its literals have been
+fixed and it is still not satisfied.</p>
+<p>The full algorithm is as follows:</p>
+<ol type="1">
+<li><ol type="a">
+<li><p>Iterate through variables $x_i$ for $i = 1 \ldots l$, if $x_i$ is not in any <em>dangerous</em> clause pick the
+value for $x_i$ with a coin toss.</p></li>
+<li><p>Define $H$ to be a graph where each vertex is a <em>surviving</em> clause, one that has not been satisfied in
+1.a, and where edge exists if and only if clauses share a <em>deferred</em> variable, one that has not been
+assigned a value in 1.a.</p>
+<p>If each of up to $m$ connected components in $H$ has $\mathcal{O}(\log{} m)$ vertices,
+then proceed to <strong>2</strong>, else repeat <strong>1.a</strong>.</p></li>
+</ol></li>
+<li>Exhaustively search assignments for the remaining variables, independently in every component.</li>
+</ol>
+<p>For a proof of the theorem we are left with analysing complexity and correctness.</p>
+<p><em>Complexity.</em> Recall the claim is the algorithm runs in expected polynomial time.</p>
+<ul>
+<li><p>Part 1.a and checking the condition in 1.b are clearly polynomial time.</p></li>
+<li><p>Part 1.b is <em>expected</em> to make the algorithm start over only a constant number of times.
+That’s not obvious but I will skip the proof.</p></li>
+<li><p>In part 2 there are as many exhaustive searches as components; at most $m$.</p></li>
+<li><p>In part 2 each exhaustive search is exponential in the size of its own problem but that size is
+$\mathcal{O}(\log{} m)$, making each search polynomial time in the size of the whole problem.</p>
+<p>The size of each subproblem is $\mathcal{O}(\log{} m)$ because $\log m$ clauses have $k \log m$ literals
+and recall $k$ is fixed and thus hidden in $\mathcal{O}$.</p></li>
+</ul>
+<p><em>Intermezzo</em>. Note that for implementation the size requirement for components can be made concrete
+from <a href="https://en.wikipedia.org/wiki/Big_O_notation#Formal_definition">the definition of $\mathcal{O}$</a>. When
+$m$ is less than, say, 16 every component can be considered small (that’s the $x &lt; x_0$ case) and otherwise consider
+it small if it has fewer than $M \log{} m$ clauses, for some arbitrarily chosen $M$, say, 4.</p>
+<p><em>Correctness.</em> The second phase correctly finds a solution as it’s an exhaustive search but only if it was given
+a partial assignment that can be extended to a complete one. We prove this condition is always satisfied using
+Lovász’s lemma and thus complete the argument in support of the theorem.</p>
+<p><strong>Lemma.</strong> <em>There is an assignment to the deferred variables such that all the surviving clauses are satisfied.</em></p>
+<p><strong>Proof.</strong>
+Let $H$ be the dependency graph as defined in the algorithm.
+Let’s pick a true/false assignment for each deferred variable with an (unbiased) coin toss.</p>
+<p>Consider $E_i$, the event $i$-th clause (and a vertex in $H$) is <em>not</em> satisfied. We want to prove that the
+probability of all opposite events ($\neg E_i$, $i$-th clause <em>is</em> satisfied) occuring together is greater than
+0, that is $Pr \bigl(\bigcap _{i=1}^{n} \neg E_i \bigr) &gt; 0$.</p>
+<p>We check the conditions of Lovász local lemma:</p>
+<ol type="1">
+<li>$Pr(E_i) \leq 2^{-k/2}$ since a surviving clause has at least $k/2$ deferred variables, and so $p$ can be
+equal to $2^{-k/2}$.</li>
+<li>Each literal appears in at most $T = 2^{\alpha k}$ clauses and each clause has exactly $k$ literals, so the
+degree $d$ is at most $kT = k2^{\alpha k}$.</li>
+<li>$4dp = 4 \cdot k2^{\alpha k} \cdot 2^{-k/2} \leq 1$ if $\alpha$ is sufficiently small (which is
+assumed).</li>
+</ol>
+<p>All the conditions are satisfied and thus the lemma follows. ∎</p>
+<p>The proof also gives one constraint for $\alpha$. From the $4dp \leq 1$ condition of the lemma, $\alpha$ has to be
+small enough to make sure $H$ does not have large components with surviving clauses that could turn out to be
+unsatisfiable. Chances of large components increase with $d$ which grows with $k$ and $\alpha$, whereas
+chances of <em>not</em> satisfying a clause decrease with growing $k$. Thus $\alpha$ can nearly approach $1/2$ for
+large $k$.</p>
+  </section>
+</article>
+
+  </main>
+
+  <footer>
+    <p>
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="display: inline-block;">
+        <img alt="Creative Commons Licence" style="display: inline-block; vertical-align: -4px;" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png">
+      </a>
+      <a href="https://github.com/OndrejSlamecka/slameckacz">
+        source
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    MathJax = {
+      tex: {
+        // Hakyll escape for dollar is double dollar
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

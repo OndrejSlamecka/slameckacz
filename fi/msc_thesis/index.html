@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monte Carlo Tree<br> Search in Verification of Markov Decision Processes</title>
+  <link rel="stylesheet" href="../../style.css?v1">
+</head>
+<body>
+  <main role="main">
+    <p>During 2017 I researched how to use
+<a href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">
+  Monte Carlo Tree Search</a>
+(a&nbsp;machine learning technique popularized mainly by its success in
+<a href="https://en.wikipedia.org/wiki/AlphaZero">Go and Chess</a>)
+to verify properties of
+  <a href="https://en.wikipedia.org/wiki/Markov_decision_process">Markov
+  Decision Processes</a> (in MDPs you can choose actions but there are
+  probabilities influencing where the process goes, see
+  <a href="http://www.prismmodelchecker.org/casestudies/zeroconf.php">zeroconf</a>
+  as an example).
+</p>
+
+<p>
+This was a joint work with my advisor
+<a href="https://www.fi.muni.cz/~xbrazdil/">Tomáš Brázdil</a>,
+<a href="https://www7.in.tum.de/~ashok/">Pranav Ashok</a>, and
+<a href="https://www7.in.tum.de/~kretinsk/">Jan Křetínský</a>.
+We have managed to come up with algorithms which outperform known
+approaches (e.g.,
+<a href="http://www.prismmodelchecker.org/bibitem.php?key=FKNP11">value iteration</a>
+or
+<a href="https://link.springer.com/chapter/10.1007%2F978-3-319-11936-6_8">BRTDP</a>)
+on some of the
+<a href="http://www.prismmodelchecker.org/casestudies/">common benchmarks</a>
+and we have shown there are models where our algorithms are
+significantly better.
+You can read the details in
+<a href="https://arxiv.org/abs/1809.03299">our paper</a> published in the proceedings of
+<a href="http://www.isola-conference.org/isola2018">ISoLA 2018</a>.
+</p>
+
+
+  </main>
+
+  <footer>
+    <p>
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="display: inline-block;">
+        <img alt="Creative Commons Licence" style="display: inline-block; vertical-align: -4px;" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png">
+      </a>
+      <a href="https://github.com/OndrejSlamecka/slameckacz">
+        source
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    MathJax = {
+      tex: {
+        // Hakyll escape for dollar is double dollar
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

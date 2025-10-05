@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seam carving</title>
+  <link rel="stylesheet" href="../../style.css?v1">
+</head>
+<body>
+  <main role="main">
+    <div class="index-link">
+  <a href="../../">‹ index</a>
+</div>
+<article>
+  <h1>Seam carving</h1>
+  <section class="author">
+    January 2021
+  </section>
+  <section>
+    <p><a href="https://computationalthinking.mit.edu/Fall20">MIT’s Introduction to Computational Thinking</a> has to be one of
+the best prepared courses ever and it’s fun to go through. If you studied computer science you’ll know most of
+the topics but some lectures are just a delight to watch especially due to
+used visualisations, for example lectures on
+<a href="https://www.youtube.com/watch?v=rRCGNvMdLEY">multigrid methods</a>,
+<a href="https://www.youtube.com/watch?v=fL8vYG69EhE">floating-point numbers</a>, or
+<a href="https://www.youtube.com/watch?v=g8RkArhtCc4">discrete Fourier transform</a>.</p>
+<p>One technique I did not know before is <em>seam carving</em>. Let’s say you have a picture of <a href="https://en.wikipedia.org/wiki/File:Broadway_tower_edit.jpg">Broadway
+tower</a>.</p>
+<p><img src="../../assets/2021-01-24-seam-carving/broadway_tower_original.jpg" class="align-center" width="640" alt="Green grass, on top of it a person in the left, a tower in the right and vast sky with a few clouds in
+the background and middle." /></p>
+<p>But it’s 640 pixels wide and you only have 400 pixels of space. Cropping would remove either a part of the tower or
+the person, both prominent parts of the image. Scaling would distort the image. But you can use seam carving, to
+cut out <em>unimportant</em> pixels from the picture, while mostly maintaining continuity:</p>
+<p><img src="../../assets/2021-01-24-seam-carving/broadway_tower_carved.png" class="align-center" width="400" alt="Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
+the background and middle. The sky is significantly narrower than previous picture." /></p>
+<h2 id="the-algorithm">The Algorithm</h2>
+<p>The process is well explained on <a href="https://en.wikipedia.org/wiki/Seam_carving">Wikipedia</a> with this very picture
+and I shouldn’t show the source code since it’s a homework in the mentioned course but in short:</p>
+<ol type="1">
+<li>Define a metric, <em>energy</em>, for how important a pixel is to the image,</li>
+<li>calculate the shortest (w.r.t. <em>energy</em>) vertical path, <em>seam</em>,
+which in each of its steps goes to a nearby pixel in the row below,</li>
+<li>cut this seam out,</li>
+<li>go to step 2 if your image is still too big.</li>
+</ol>
+<p>This works for reducing width. In case you’re reducing height you’ll be finding horizontal paths.</p>
+<p>Implementation is fairly straightforward. Cutting seams out can be done by just removing their pixels from the
+image, and calculating the seam that’s given by the shortest path is a small exercise in dynamic programming.</p>
+<p>The space for creativity is in defining the metric, let’s start with the <em>energy</em> function provided by
+Computational Thinking course, edge detection using <a href="https://en.wikipedia.org/wiki/Sobel_operator">Sobel
+filter</a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia numberSource"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">brightness</span>(c<span class="op">::</span><span class="dt">RGB</span>) <span class="op">=</span> <span class="fu">mean</span>((c.r, c.g, c.b))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">energy</span>(img)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    ∇y <span class="op">=</span> <span class="fu">convolve</span>(<span class="fu">brightness</span>.(img), Kernel.<span class="fu">sobel</span>()[<span class="fl">1</span>])</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    ∇x <span class="op">=</span> <span class="fu">convolve</span>(<span class="fu">brightness</span>.(img), Kernel.<span class="fu">sobel</span>()[<span class="fl">2</span>])</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sqrt</span>.(∇x<span class="op">.^</span><span class="fl">2</span> <span class="op">.+</span> ∇y<span class="op">.^</span><span class="fl">2</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<p>This approach is very robust but we’ll see we can improve results by tailoring a metric for a given image. Here
+we see its effect on our tower, greener means more energy.</p>
+<p><img src="../../assets/2021-01-24-seam-carving/broadway_tower_energy.png" class="align-center" width="640" alt="Same image as the first one with person and tower and wide sky. But now transformed to only highlight
+edges on a black background." /></p>
+<p>Let’s see how it works for seam carving.</p>
+<h2 id="broadway-tower-energy">Broadway Tower Energy</h2>
+<p><img src="../../assets/2021-01-24-seam-carving/broadway_tower_energy_carved.png" class="align-center" width="400" alt="Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
+the background and middle. The sky is significantly narrower than previous picture. But the tower is
+cut too from both sides." /></p>
+<p>The cuts at the bottom edges of the tower are quite unpleasant. But we can change our metric! Let’s add
+importance to dark pixels to fix the bottom right edge.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode julia numberSource"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dark_relu</span>(c<span class="op">::</span><span class="dt">RGB</span>) <span class="op">=</span> <span class="fu">max</span>(<span class="fl">0</span>, (<span class="fl">1.0</span> <span class="op">-</span> <span class="fu">brightness</span>(c)) <span class="op">-</span> <span class="fl">0.63</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.63 found by a few experiments</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">energy_darkness</span>(img) <span class="op">=</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">min</span>.(<span class="fl">1</span>, <span class="fu">energy</span>(img) <span class="op">.+</span> <span class="fu">dark_relu</span>.(img))</span></code></pre></div>
+<p><img src="../../assets/2021-01-24-seam-carving/broadway_tower_darkness_carved.png" class="align-center" width="400" alt="Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
+the background and middle. The sky is significantly narrower than previous picture. The tower is no
+longer cut from the right side but has an even bigger cut on the left." /></p>
+<p>The fix has worked for the intended area but made the left side even worse. The beige in the bottom left of the
+tower doesn’t create as strong edges as clouds.</p>
+<p>Let’s try taking a few of the tower’s pixels, calculate the mean colour, and in our metric assign high values to
+pixels close to this colour.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode julia numberSource"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>beige_cutout <span class="op">=</span> img[<span class="fl">340</span><span class="op">:</span><span class="fl">360</span>, <span class="fl">365</span><span class="op">:</span><span class="fl">375</span>]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>beige <span class="op">=</span> <span class="fu">mean</span>(beige_cutout)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">beigness</span>(c<span class="op">::</span><span class="dt">RGB</span>) <span class="op">=</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    (c.r <span class="op">-</span> beige.r)<span class="op">^</span><span class="fl">2</span> <span class="op">+</span> (c.g <span class="op">-</span> beige.g)<span class="op">^</span><span class="fl">2</span> <span class="op">+</span> (c.b <span class="op">-</span> beige.b)<span class="op">^</span><span class="fl">2</span> <span class="op">&lt;</span> <span class="fl">0.2</span><span class="op">^</span><span class="fl">2</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    ? <span class="fl">0.6</span> <span class="op">:</span> <span class="fl">0.0</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">energy_beigness</span>(img) <span class="op">=</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">min</span>.(<span class="fl">1</span>, <span class="fu">energy</span>(img) <span class="op">.+</span> <span class="fu">dark_relu</span>.(img) <span class="op">.+</span> <span class="fu">beigness</span>.(img))</span></code></pre></div>
+<p><img src="../../assets/2021-01-24-seam-carving/broadway_tower_carved.png" class="align-center" width="400" alt="Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
+the background and middle. The sky is significantly narrower than previous picture." /></p>
+<p>Splendid! This is how it got there:</p>
+<p><img src="../../assets/2021-01-24-seam-carving/broadway_tower_carved.gif" class="align-center" width="640" alt="Green grass, on top of it a person in the left, a tower in the right and sky with a few clouds in
+the background and middle. The sky starts wide but animation shows it getting narrower." /></p>
+<h2 id="lighthouse-energy">Lighthouse Energy</h2>
+<p>Let’s try another picture, <em>lighthouse</em> from Julia’s <a href="https://testimages.juliaimages.org/">TestImages</a>.</p>
+<p><img src="../../assets/2021-01-24-seam-carving/lighthouse.png" class="align-center" width="640" alt="Houses with a lighthouse on top of a cliff above sea." /></p>
+<p>First, just with energy decided by edge detection.</p>
+<p><img src="../../assets/2021-01-24-seam-carving/lighthouse_energy_carved.png" class="align-center" width="400" alt="Houses with a lighthouse on top of a cliff above sea, narrower but with a cut in the lighthouse." /></p>
+<p>That’s an ugly cut in the lighthouse. An obvious idea is to consider bright pixels as more energetic, and it
+works out well. The building to the right from the lighthouse suffered this time but it’s less noticeable and we
+even get more sea!</p>
+<p><img src="../../assets/2021-01-24-seam-carving/lighthouse_brightness_carved.png" class="align-center" width="400" alt="Houses with a lighthouse on top of a cliff above sea, narrower with without cut in the lighthouse." /></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode julia numberSource"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bright_relu</span>(c<span class="op">::</span><span class="dt">RGB</span>) <span class="op">=</span> <span class="fu">max</span>.(<span class="fl">0</span>, <span class="fu">brightness</span>(c) <span class="op">.-</span> <span class="fl">0.8</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">energy_brightness</span>(img) <span class="op">=</span> <span class="fu">min</span>.(<span class="fl">1</span>, <span class="fu">energy</span>(img) <span class="op">.+</span> <span class="fu">bright_relu</span>.(img))</span></code></pre></div>
+  </section>
+</article>
+
+  </main>
+
+  <footer>
+    <p>
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="display: inline-block;">
+        <img alt="Creative Commons Licence" style="display: inline-block; vertical-align: -4px;" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png">
+      </a>
+      <a href="https://github.com/OndrejSlamecka/slameckacz">
+        source
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    MathJax = {
+      tex: {
+        // Hakyll escape for dollar is double dollar
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>
