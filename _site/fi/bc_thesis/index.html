@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All Multiway Cuts</title>
+  <link rel="stylesheet" href="../../style.css?v1">
+</head>
+<body>
+  <main role="main">
+    <p>During 2014 and 2015 I implemented and evaluated the
+<em>Circuit-Cocircuit</em> algorithm. This algorithm was proposed by <a href="http://www.fi.muni.cz/~hlineny/">prof. Petr Hliněný</a>  to solve
+the problem of generating all minimal multiway edge cuts of a graph.
+Besides rather neat theory around it (it's based on ideas from matroid
+theory) it also has a practical use, for example <a href="http://www.cdv.cz/en/">The Transport Research Centre</a> uses this
+algorithm for infrastructure planning research.</p>
+
+
+<p>This research was the topic of my bachelor's thesis and it resulted
+in <a href="multicut.pdf">a paper</a> published in LNCS proceedings of
+<a href="http://www.memics.cz">MEMICS</a> 2015.
+The algorithm implementation with documentation is available at <a href="https://github.com/OndrejSlamecka/mincuts">GitHub</a>.</p>
+
+  </main>
+
+  <footer>
+    <p>
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="display: inline-block;">
+        <img alt="Creative Commons Licence" style="display: inline-block; vertical-align: -4px;" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png">
+      </a>
+      <a href="https://github.com/OndrejSlamecka/slameckacz">
+        source
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    MathJax = {
+      tex: {
+        // Hakyll escape for dollar is double dollar
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

@@ -1,15 +1,15 @@
 [My personal website](https://www.slamecka.cz/),
 built with [LaTeX.css](https://latex.now.sh/), [Hakyll](https://jaspervdj.be/hakyll/), and [Nix](https://nixos.org/).
 
-    # To build the site generator
-    nix-build --show-trace .
+    # Dev process
+    nix develop
 
-    # To preview locally
-    ./result/bin/site watch
+    cabal run site clean
+    cabal run site build
+    cabal run site rebuild
+    cabal run site watch
 
-    # To deploy to AWS S3 + CloudFront
-    ./result/bin/site clean && ./result/bin/site build && ../s5upload/s5upload.py
-
+    git subtree push --prefix _site origin gh-pages
 
 **Things I might add**
 

@@ -1,6 +1,6 @@
 /*!
  * This file has three sections.
- * 1. https://github.com/vincentdoerig/latex-css @ 567d3df,
+ * 1. https://github.com/vincentdoerig/latex-css @ 567d3df, -- years later: I made changes to it now,
  * 2. default Pandoc syntax highlighting style,
  * 3. customisations of the above.
  */
@@ -12,6 +12,7 @@
  * Licensed under MIT (https://github.com/vincentdoerig/latex-css/blob/master/LICENSE)
 */
 
+/*
 @font-face {
   font-family: 'Latin Modern';
   font-style: normal;
@@ -36,12 +37,6 @@
   font-family: 'Latin Modern';
   font-style: normal;
   font-weight: bold;
-  font-display: swap;
-  src: url('./fonts/LM-bold.woff2') format('woff2'),
-    url('./fonts/LM-bold.woff') format('woff'),
-    url('./fonts/LM-bold.ttf') format('truetype');
-}
-
 @font-face {
   font-family: 'Latin Modern';
   font-style: italic;
@@ -51,6 +46,7 @@
     url('./fonts/LM-bold-italic.woff') format('woff'),
     url('./fonts/LM-bold-italic.ttf') format('truetype');
 }
+*/
 
 /* Box sizing rules */
 *,
@@ -83,7 +79,8 @@ html {
 }
 
 body {
-  font-family: 'Latin Modern', Georgia, Cambria, 'Times New Roman', Times, serif;
+  /* font-family: 'Latin Modern', Georgia, Cambria, 'Times New Roman', Times, serif; */
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; 
   line-height: 1.8;
 
   max-width: 80ch;
@@ -95,8 +92,10 @@ body {
   counter-reset: theorem;
   counter-reset: definition;
 
+  /*
   color: hsl(0, 5%, 10%);
   background-color: hsl(210, 20%, 98%);
+  */
 
   text-rendering: optimizeLegibility;
 }
@@ -116,7 +115,7 @@ a:not([class]) {
 }
 
 /* Make links red */
-a,
+/* a,
 a:visited {
   color: #a00;
 }
@@ -124,15 +123,15 @@ a:visited {
 a:focus {
   outline-offset: 2px;
   outline: 2px solid hsl(220, 90%, 52%);
-}
+} 
 
-/* Make images easier to work with */
+/* Make images easier to work with * /
 img {
   max-width: 100%;
   display: block;
 }
 
-/* Inherit fonts for inputs and buttons */
+/* Inherit fonts for inputs and buttons * /
 input,
 button,
 textarea,
@@ -140,10 +139,11 @@ select {
   font: inherit;
 }
 
-/* Prevent textarea from overflowing */
+/* Prevent textarea from overflowing * /
 textarea {
   width: 100%;
 }
+*/
 
 /* Natural flow and rhythm in articles by default */
 article > * + * {
@@ -175,28 +175,6 @@ kbd {
   border-radius: 2px;
   padding: 2px 4px;
   font-size: 75%;
-}
-
-/* Make table 100% width, add borders between rows */
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-  width: 100%;
-  max-width: 100%;
-}
-th,
-td {
-  text-align: left;
-  padding: 0.5rem;
-}
-td {
-  border-bottom: 1px solid hsl(0, 0%, 85%);
-}
-thead th {
-  border-bottom: 2px solid hsl(0, 0%, 70%);
-}
-tfoot th {
-  border-top: 2px solid hsl(0, 0%, 70%);
 }
 
 /* Center align the title */
@@ -460,11 +438,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
  * Ondrej's customisations.
  */
 
-body {
-  font-size: 120%;
-}
-
-a {
+/* a {
   margin: 0 -0.1em;
   padding: 0 0.1em;
   border-radius: 2px;
@@ -473,54 +447,17 @@ a {
 a:hover {
   color: #fff;
   background: #a00;
+} */
+
+.plain-list {
+  padding: 0 0 1em;
+  list-style: none;
 }
 
-header {
+.plain-list li {
   display: flex;
   justify-content: space-between;
-
-  margin: -0.7em -0.1em 1.4em;
-}
-
-header a {
-  margin: 0;
-}
-
-@media (max-width: 480px) {
-  header {
-    text-align: center;
-    display: block;
-  }
-
-  header nav {
-    display: none;
-  }
-}
-
-.post-list {
-  padding: 0;
-}
-
-.post-list li {
-  display: flex;
-  justify-content: space-between;
-}
-
-.post-list a {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.post-list span {
-  text-align: right;
-  min-width: 8em;
-}
-
-@media (max-width: 480px) {
-  .post-list li {
-    display: block;
-  }
+  list-style: none;
 }
 
 img.align-center {
@@ -579,3 +516,11 @@ pre.numberSource code > span:before {
 }
 
 code span.im { color: #007020; font-weight: bold; } /* Import; copied from Keyword */
+
+.index-link
+{
+  margin: -1em 0 1em;
+}
+
+.author { text-align: left; margin: -0.625em 0 2em; }
+h1:first-child { text-align: left; }

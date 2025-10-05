@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 import           Hakyll
-import qualified Text.Pandoc.Shared as Pandoc (headerShift)
+import qualified Text.Pandoc.Transforms as Pandoc (headerShift)
 import           Data.List (isInfixOf)
 import           System.FilePath.Posix (splitFileName, takeBaseName, takeDirectory, (</>))
 
@@ -8,7 +8,7 @@ import           System.FilePath.Posix (splitFileName, takeBaseName, takeDirecto
 main :: IO ()
 main =
   hakyll $ do
-    match ("assets/**/*" .||. "fonts/*" .||. "fi/**/*.pdf") $ do
+    match ("assets/*" .||. "assets/**/*" .||. "fonts/*" .||. "fi/**/*.pdf" .||. "CNAME") $ do
       route   idRoute
       compile copyFileCompiler
 

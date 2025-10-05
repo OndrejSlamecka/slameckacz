@@ -1,9 +1,0 @@
-dir: '_site'
-bucket: 'www.slamecka.cz'
-distribution: EH2XBIUAPIUHS
-
-cache_control: # set max-age
-    default: 86400 # a day
-    rules:
-        '\.(ico|jpg|jpeg|png|gif)$': 31536000 # 365 days
-        '\.(css|js)$': 604800 # a week
