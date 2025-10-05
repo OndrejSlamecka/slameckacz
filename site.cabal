@@ -5,8 +5,8 @@ cabal-version:      >= 1.10
 
 executable site
   main-is:          site.hs
-  build-depends:    base == 4.*
-                  , hakyll == 4.13.*
+  build-depends:    base >=4.14 && <5
+                  , hakyll >= 4.14
                   , pandoc
                   , filepath
   ghc-options:      -threaded

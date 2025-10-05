@@ -25,7 +25,8 @@ cabal.project.local~
 
 # Nix
 result
+.cabal-update-done
 
 # Hakyll
-_site
+# _site # kept for github pages 
 _cache

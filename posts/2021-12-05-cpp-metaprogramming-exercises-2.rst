@@ -1,11 +1,8 @@
 ---
-title: C++ Metaprogramming Exercises Vol. II
+title: C++ Metaprogramming Exercises II
 ---
 
-This post is a part of a series:
-
-* `C++ Metaprogramming Exercises Vol. I: Basics </posts/2021-03-17-cpp-metaprogramming-exercises-1>`_
-* C++ Metaprogramming Exercises Vol. II: Algorithms (this page)
+See also `C++ Metaprogramming Exercises I </posts/2021-03-17-cpp-metaprogramming-exercises-1>`_.
 
 Below is a set of exercises for type level programming in C++ with a focus on algorithms which makes them more
 suitable for programmers who are already comfortable with the basics from the previous set.
@@ -155,12 +152,3 @@ suitable for programmers who are already comfortable with the basics from the pr
     int main()
     {
     }
-
-You can have a look at `my solution</assets/2021-12-05-cpp-metaprogramming-exercises-2/typelevel_set2.cpp>`_,
-which is provided with no guarantees.
-
-In order to generate the exercise file from the solved file I used the script below.
-
-.. code-block:: sh
-
-    cat typelevel_set2.cpp | awk -v incode=1 '{ if ($0 ~ "// \\\^?.?Your"){ incode = !incode; if (!incode) { print $0 } }; if (incode) { print $0 } }' | awk -v inmain=0 '{ if (inmain == 1 && $0 != "{" && $0 != "}") { printf "// %s\n",$0; } else { print $0 }; if ($0 == "int main()") { inmain = 1 }; }' | awk '{ if ($0 ~ "^static_assert") { printf "// %s\n",$0; } else { print $0; } }'

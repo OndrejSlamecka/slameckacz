@@ -1,35 +1,23 @@
 ---
-title: About Ondřej
+title: Ondrej's website
 ---
 
-<p>
-I am a computer programmer working on low-latency trading software at
-<a href="https://www.mavensecurities.com">Maven Securities</a>
-and occasionally on turn-based strategy game <a href="https://www.hexfray.com">Hexfray</a>.
-</p>
+<img src="./assets/cat.gif" alt="a cat running in a wheel">
 
-<ul>
+<ul class="plain-list">
   <li><a href="mailto:ondrej@slamecka.cz">ondrej@slamecka.cz</a></li>
   <li><a href="https://github.com/OndrejSlamecka">github.com/OndrejSlamecka</a></li>
-  <li><a href="https://twitter.com/OndrejSlamecka">twitter.com/OndrejSlamecka</a></li>
 </ul>
 
-<h2>Blog Posts</h2>
-  <ul class="post-list">
-    $for(posts)$
-      <li>
-        <a href="$url$">$title$</a>
-        <span>$date$</span>
-      </li>
-    $endfor$
-  </ul>
+<ul class="plain-list">
+  $for(posts)$
+    <li>
+      <a href="$url$">$title$</a>
+    </li>
+  $endfor$
+</ul>
 
-<h2>Theses & publications</h2>
-  <p>
-  I wrote
-    <a href="/fi/bc_thesis/">
-      a bachelor's thesis and co-authored a paper about a new graph algorithm</a>,
-    and wrote <a href="/fi/msc_thesis/">
-      a master's thesis and co-authored a paper about using machine learning to verify properties of
-      probabilistic systems</a>.
-  </p>
+<ul class="plain-list">
+  <li><a href="https://arxiv.org/abs/1809.03299">Monte Carlo Tree Search for Verifying Reachability in Markov Decision Processes</a></li>
+  <li><a href="fi/bc_thesis/multicut.pdf">Practical Exhaustive Generation of Small Multiway Cuts in Sparse Graphs</a></li>
+</ul>

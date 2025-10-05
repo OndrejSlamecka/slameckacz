@@ -1,11 +1,8 @@
 ---
-title: C++ Metaprogramming Exercises Vol. I
+title: C++ Metaprogramming Exercises I
 ---
 
-This post is a part of a series:
-
-* C++ Metaprogramming Exercises Vol. I: Basics (this page)
-* `C++ Metaprogramming Exercises Vol. II: Algorithms </posts/2021-12-05-cpp-metaprogramming-exercises-2>`_
+See also `C++ Metaprogramming Exercises II </posts/2021-12-05-cpp-metaprogramming-exercises-2>`_.
 
 Below is a set of exercises for type level programming in C++, suitable for newcomers to the topic but hopefully
 entertaining even for an intermediate template programmer. I made this when I decided to dedicate an evening to
@@ -270,13 +267,3 @@ improving my fluency in the use of templates but couldn't easily find such exerc
     //     print(Vector<1,2,3,4,5,6>{});
     //     std::cout << typeid(Vector<1,2,3,4,5,6>{}).name() << '\n';
     }
-
-
-You can have a look at `my solution</assets/2021-03-17-cpp-metaprogramming-exercises-1/typelevel_set1.cpp>`_,
-which is provided with no guarantees.
-
-In order to generate the exercise file from the solved file I used the script below.
-
-.. code-block:: sh
-
-    cat typelevel_set1.cpp | awk -v incode=1 '{ if ($0 ~ "// \\\^?.?Your"){ incode = !incode; if (!incode) { print $0 } }; if (incode) { print $0 } }' | awk -v inmain=0 '{ if (inmain == 1 && $0 != "{" && $0 != "}") { printf "// %s\n",$0; } else { print $0 }; if ($0 == "int main()") { inmain = 1 }; }' | awk '{ if ($0 ~ "^static_assert") { printf "// %s\n",$0; } else { print $0; } }'
