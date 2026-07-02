@@ -9,11 +9,10 @@ built with [LaTeX.css](https://latex.now.sh/), [Hakyll](https://jaspervdj.be/hak
     cabal run site rebuild
     cabal run site watch
 
-    git subtree push --prefix _site origin gh-pages
-
-    # or if force push is needed:
+    # Deploy: commit everything (including _site), then
+    git push origin master
     git branch -D gh-pages
-    git subtree split --prefix _site origin -b gh-pages
+    git subtree split --prefix _site -b gh-pages
     git push -f origin gh-pages
 
 

@@ -29,7 +29,6 @@
     caret-color: transparent;
     width: 2ch;
     font-size: 2rem;
-    /* height: 2rem; */
     text-align: center;
     border: 1px solid #ccc;
     text-transform: uppercase;
@@ -40,32 +39,32 @@
 }
 
 .letter::selection {
-background: transparent;
-color: inherit;
+    background: transparent;
+    color: inherit;
 }
 
 .letter.grey {
-background-color: #a0a0a0;
+    background-color: #a0a0a0;
 }
 
 .letter.yellow {
-background-color: #f4c430;
+    background-color: #f4c430;
 }
 
 .letter.green {
-background-color: #4caf50;
-color: white;
+    background-color: #4caf50;
+    color: white;
 }
 
 #word-list {
-font-size: 1rem;
+    font-size: 1rem;
 }
 
 .help
 {
     margin: 6em 0 1em;
     font-size: 0.8rem;
-    color: rgba(80, 80, 80);
+    color: rgb(80, 80, 80);
 }
 </style>
 <div class="wordle-tool">
@@ -87,31 +86,51 @@ font-size: 1rem;
 </div> <!-- .wordle-tool -->
 
 <script>
+// CONSTANTS
+const ROWS = 6;
+const COLS = 5;
+
+// DICTIONARY
+// Parsed lazily and memoized: the #dictionary <script> tag comes *after*
+// this script in the document, so it doesn't exist yet when this script
+// runs. Parsed on first call, then reused.
+let dictionary = null;
+
+function getDictionary() {
+    if (dictionary !== null) return dictionary;
+
+    // Don't cache while the tag is still missing (the browser may not
+    // have parsed that far yet); retry on the next evaluate() instead.
+    const scriptTag = document.getElementById('dictionary');
+    if (!scriptTag) return [];
+
+    dictionary = scriptTag.textContent.split('\n').map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
+    return dictionary;
+}
+
+// FILTERING
 let lastFiltered = [];
+
 function evaluate() {
     const answerEl = document.getElementById('answer');
     const pluralEl1 = document.getElementById('answer-plural1');
     const pluralEl2 = document.getElementById('answer-plural2');
 
-    const scriptTag = document.getElementById('dictionary');
-    let words = [];
+    const words = getDictionary();
 
-    if (!scriptTag) 
-    {
+    if (words.length === 0) {
         answerEl.textContent = '0';
         pluralEl1.textContent = 's';
         pluralEl2.textContent = '';
         return;
     }
 
-    dictionary = scriptTag.textContent.split('\n').map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
-
-    const forms = document.querySelectorAll('.guess');
+    const rowEls = document.querySelectorAll('.guess');
     const results = [];
 
     // Collect the board state
-    forms.forEach(form => {
-        const inputs = form.querySelectorAll('.letter');
+    rowEls.forEach(rowEl => {
+        const inputs = rowEl.querySelectorAll('.letter');
         const row = [];
 
         inputs.forEach(input => {
@@ -133,7 +152,6 @@ function evaluate() {
         results.push(row);
     });
 
-    // ---
     // Helper: count letters in a word (multiset)
     const countLetters = (word) => {
         const m = {};
@@ -142,9 +160,8 @@ function evaluate() {
     };
 
     // Filter words: for each candidate, every row must be satisfiable
-    const filtered = dictionary.filter(word => {
+    const filtered = words.filter(word => {
         // Check each row independently using a fresh multiset
-
         for (const row of results) {
             // Skip empty rows (no letters at all)
             if (row.every(cell => !cell.letter)) continue;
@@ -156,7 +173,7 @@ function evaluate() {
             for (let i = 0; i < 5; i++) {
                 const { letter, state } = row[i];
                 if (state === 'green') {
-                    if (word[i] !== letter) 
+                    if (word[i] !== letter)
                         return false;
                     counts[letter] -= 1;
                 }
@@ -166,7 +183,7 @@ function evaluate() {
             for (let i = 0; i < 5; i++) {
                 const { letter, state } = row[i];
                 if (state === 'yellow') {
-                    if (word[i] === letter) 
+                    if (word[i] === letter)
                         return false;           // cannot be in same spot
                     if (!counts[letter])
                         return false;           // not enough copies left
@@ -178,8 +195,7 @@ function evaluate() {
             for (let i = 0; i < 5; i++) {
                 const { letter, state } = row[i];
                 if (state === 'grey' && letter) {
-                    if (letter in counts && counts[letter]) 
-                    {
+                    if (letter in counts && counts[letter]) {
                         return false;     // still leftover -> invalid
                     }
                 }
@@ -200,8 +216,8 @@ function evaluate() {
 
     if (filtered.length > 0 && filtered.length < 100) {
         if (!document.getElementById('toggle-words')) {
-        toggleContainer.innerHTML = '<a href="#" id="toggle-words">Show</a>';
-        document.getElementById('toggle-words').addEventListener('click', toggleWordList);
+            toggleContainer.innerHTML = '<a href="#" id="toggle-words">Show</a>';
+            document.getElementById('toggle-words').addEventListener('click', toggleWordList);
         }
     } else {
         toggleContainer.innerHTML = '';
@@ -216,7 +232,7 @@ function evaluate() {
     }
 }
 
-
+// WORD LIST UI
 function renderWordList() {
     const wordListEl = document.getElementById('word-list');
     if (!wordListEl) return;
@@ -242,8 +258,7 @@ function toggleWordList(e) {
 function cycleColour(el) {
     if (!el.classList.contains('grey') &&
         !el.classList.contains('yellow') &&
-        !el.classList.contains('green'))
-    { 
+        !el.classList.contains('green')) {
         if (el.value)
             el.classList.add('grey');
         return;
@@ -264,118 +279,133 @@ function cycleColour(el) {
     evaluate();
 }
 
-// GENERATE FORMS
+// GRID CREATION
 (function() {
     const container = document.getElementById("grid");
 
-    for (let row = 0; row < 6; row++) 
-    {
-        const form = document.createElement('form');
-        form.classList.add('guess');
+    for (let row = 0; row < ROWS; row++) {
+        const rowEl = document.createElement('div');
+        rowEl.classList.add('guess');
 
-        for (let j = 0; j < 5; j++) 
-        {
+        for (let col = 0; col < COLS; col++) {
             const input = document.createElement('input');
-            input.maxLength = 1;
+            input.type = 'text';
+            input.autocomplete = 'off';
+            input.setAttribute('autocorrect', 'off'); // Safari-specific; not a reflected property everywhere
+            input.autocapitalize = 'off';
+            input.spellcheck = false;
             input.classList.add('letter');
-            form.appendChild(input);
+            rowEl.appendChild(input);
         }
 
-        container.appendChild(form);
+        container.appendChild(rowEl);
     }
 
     const firstInput = container.querySelector('input.letter');
-    if (firstInput) 
+    if (firstInput)
         firstInput.focus();
+})();
 
-const letters = document.querySelectorAll('.letter');
+// EVENT HANDLING
 
-letters.forEach(input => {
-    // Typing
-    input.addEventListener('input', () => {
-    if (input.value.trim() === '') {
-        input.classList.remove('grey', 'yellow', 'green');
-    } else {
-        input.classList.remove('yellow', 'green');
-        input.classList.add('grey');
-    }
-    });
+// Typing: normalize the cell to a single uppercase letter. Uses the
+// 'input' event (not key events) so it works with mobile virtual
+// keyboards and IMEs, where event.key is often "Unidentified".
+document.querySelectorAll('.letter').forEach(input => {
+    input.addEventListener('input', (event) => {
+        // Prefer the freshly inserted text (event.data) over the raw
+        // value: when the cell already holds a letter, the new letter
+        // should win regardless of where the caret was.
+        const source = (event.data && /[a-zA-Z]/.test(event.data)) ? event.data : input.value;
+        const typed = source.replace(/[^a-zA-Z]/g, '');
+        const letter = typed ? typed[typed.length - 1].toUpperCase() : '';
+        input.value = letter;
 
-    // Deleting
-    input.addEventListener('keydown', (e) => {
-    if ((e.key === 'Backspace' || e.key === 'Delete')) {
-        input.classList.remove('grey', 'yellow', 'green');
-        input.value = '';
-    }
+        if (letter) {
+            input.classList.remove('yellow', 'green');
+            input.classList.add('grey');
+        } else {
+            input.classList.remove('grey', 'yellow', 'green');
+        }
+
+        evaluate();
+
+        if (letter) {
+            const allInputs = Array.from(document.querySelectorAll('.letter'));
+            const currentIndex = allInputs.indexOf(input);
+            if (currentIndex >= 0 && currentIndex + 1 < allInputs.length) {
+                allInputs[currentIndex + 1].focus();
+            }
+        }
     });
 
     // Click to cycle state
     input.addEventListener('click', () => { cycleColour(input); });
 });
-})();
 
-// ON LETTER KEY
+// Navigation and actions, delegated on the document. Handled on keydown
+// (not keyup) so preventDefault() actually stops the browser's default
+// behaviour (space scrolling the page, arrow keys moving the caret).
 document.addEventListener('keydown', function(event) {
-const target = event.target;
-if (!target.classList.contains('letter')) return;
+    const target = event.target;
+    if (!target.classList.contains('letter'))
+        return;
 
-const key = event.key;
-const allInputs = Array.from(document.querySelectorAll('.letter'));
-const currentIndex = allInputs.indexOf(target);
+    const key = event.key;
+    const allInputs = Array.from(document.querySelectorAll('.letter'));
+    const currentIndex = allInputs.indexOf(target);
 
-const rowLength = 5; // number of inputs per form
-
-// Helper: move focus if valid index
-function moveTo(index) {
-    if (index >= 0 && index < allInputs.length) {
-    allInputs[index].focus();
+    // Helper: move focus if valid index
+    function moveTo(index) {
+        if (index >= 0 && index < allInputs.length) {
+            allInputs[index].focus();
+        }
     }
-}
 
-if (key.length === 1 && /^[a-zA-Z]$/.test(key)) {
-    // Replace input contents with typed letter (uppercase)
-    target.value = key.toUpperCase();
+    if (key === 'ArrowRight') {
+        event.preventDefault();
+        moveTo(currentIndex + 1);
 
-    // Move to next input (right)
-    // TODO: why does this evaluate have to be delayed but the one on backspace doesn't? (if you put it above and just enter a letter it won't evaluate right)
-    setTimeout(() => { evaluate(); moveTo(currentIndex + 1) }, 0);
+    } else if (key === 'ArrowLeft') {
+        event.preventDefault();
+        moveTo(currentIndex - 1);
 
-} else if (key === 'Backspace' || key === 'Delete') {
-    // Clear current input
-    target.value = '';
-    evaluate();
+    } else if (key === 'ArrowDown') {
+        event.preventDefault();
+        moveTo(currentIndex + COLS);
 
-    // Move to previous input (left)
-    setTimeout(() => moveTo(currentIndex - 1), 0);
+    } else if (key === 'ArrowUp') {
+        event.preventDefault();
+        moveTo(currentIndex - COLS);
 
-} else if (key === 'ArrowRight') {
-    event.preventDefault();
-    moveTo(currentIndex + 1);
+    } else if (key === ' ') {  // spacebar
+        event.preventDefault(); // stop page scroll
+        cycleColour(target);
 
-} else if (key === 'ArrowLeft') {
-    event.preventDefault();
-    moveTo(currentIndex - 1);
-
-} else if (key === 'ArrowDown') {
-    event.preventDefault();
-    moveTo(currentIndex + rowLength);
-
-} else if (key === 'ArrowUp') {
-    event.preventDefault();
-    moveTo(currentIndex - rowLength);
-
-} else if (key === ' ') {  // spacebar
-    event.preventDefault(); // stop page scroll
-    cycleColour(target);
-}
+    } else if (key === 'Backspace' || key === 'Delete') {
+        // Empty cell: clear the previous cell and move focus there.
+        // Filled cell: fall through to native deletion, which the
+        // 'input' handler above picks up.
+        if (target.value === '') {
+            event.preventDefault();
+            const prev = allInputs[currentIndex - 1];
+            if (prev) {
+                prev.focus();
+                prev.value = '';
+                prev.classList.remove('grey', 'yellow', 'green');
+                evaluate();
+            }
+        }
+    }
 });
 
-// evaluate called after dictionary definition
+// evaluate() is first called by the <script> tag at the end of the page,
+// after the dictionary has been defined.
 </script>
 
 <!-- https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93 -->
 
-<script id="dictionary" type="application/text">
+<script id="dictionary" type="text/plain">
 aahed
 aalii
 aapas
